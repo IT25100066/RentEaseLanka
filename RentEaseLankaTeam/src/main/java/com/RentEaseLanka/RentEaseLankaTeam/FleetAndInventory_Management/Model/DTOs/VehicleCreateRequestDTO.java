@@ -3,16 +3,15 @@ package com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.D
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-public class VehicleRequestDTO {
+public class VehicleCreateRequestDTO {
 
-    // You secure your 12 Input Validation marks by keeping these annotations here
     @NotBlank(message = "License plate is required")
     private String licensePlate;
 
@@ -21,11 +20,12 @@ public class VehicleRequestDTO {
 
     @NotNull(message = "Daily rate is required")
     @Positive(message = "Daily rate must be greater than zero")
-    private Double dailyRate;
+    private BigDecimal dailyRate;
 
+    private int year;
 
-    private int Year;
+    @NotNull(message = "Category is required")
+    private Long categoryId;
 
-    // This handles the binary files
     private List<MultipartFile> images;
 }

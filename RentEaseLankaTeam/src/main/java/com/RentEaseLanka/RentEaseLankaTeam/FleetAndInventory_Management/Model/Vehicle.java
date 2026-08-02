@@ -33,7 +33,7 @@ public class Vehicle {
     private String model;
 
     @Min(1990)
-    @Column(nullable = false)
+    @Column(name = "manufacture_year", nullable = false)
     private int year ;
 
     @PositiveOrZero
@@ -41,7 +41,7 @@ public class Vehicle {
     private double currentOdometer;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 30)
+    @Column(name = "vehicle_status", nullable = false, length = 30)
     private VehicleStatus status;
 
     @NotNull
@@ -50,7 +50,7 @@ public class Vehicle {
     private BigDecimal dailyRentalRate;
 
     // Relational Mapping: Many vehicles belong to one category
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY,optional = true)
     @JoinColumn(name = "category_id", nullable = false)
     private VehicleCategory category;
 
