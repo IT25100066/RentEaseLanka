@@ -1,5 +1,7 @@
 package com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model;
 
+import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.Vehicle_State.AvailableState;
+import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.Vehicle_State.VehicleState;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -7,10 +9,12 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Entity
 @Data
+@Getter @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -22,7 +26,7 @@ public class Vehicle {
 
     @NonNull
     @Column(unique = true , nullable = false, length = 20)
-    private String licencePlate;
+    private String licensePlate;
 
     @NonNull
     @Column( nullable = false, length = 50)
@@ -60,12 +64,25 @@ public class Vehicle {
 
     private LocalDateTime updatedAt;
 
+    @Transient
+    private VehicleState currentState;
+
+    //Link Vehicle Image Entity which consist a list of VehicleImage objects
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<VehicleImage> images = new ArrayList<>();
+
+
+    public void changeState(VehicleStatus newStatus, VehicleState newState) {
+        this.status = newStatus;
+        this.currentState = newState;
+    }
+
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
-            this.status = VehicleStatus.AVAILABLE;
+            changeState(VehicleStatus.AVAILABLE, new AvailableState());
         }
     }
 
@@ -73,4 +90,24 @@ public class Vehicle {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+
+    //Change the vehicle state
+
+    public void reserve() {
+        currentState.reserve(this);
+    }
+
+    public void rent() {
+        currentState.rent(this);
+    }
+
+    public void returnVehicle() {
+        currentState.returnVehicle(this);
+    }
+
+    public void scheduleMaintenance() {
+        currentState.scheduleMaintenance(this);
+    }
+
 }
