@@ -4,6 +4,5 @@ public enum VehicleStatus {
     AVAILABLE,
     RENTED,
     UNDER_MAINTENANCE,
-    OUT_OF_SERVICE,
-    RESERVED;
+    OUT_OF_SERVICE
 }
