@@ -1,7 +1,6 @@
 package com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Controller;
 
-import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.DTOs.VehicleCategoryCreateRequestDTO;
-import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.DTOs.VehicleCreateRequestDTO;
+import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.DTOs.*;
 import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.VehicleCategory;
 import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Service.FleetService;
 import jakarta.validation.Valid;
@@ -11,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
@@ -36,21 +37,40 @@ public class FleetController {
 
     }
 
-
-    //create a vehicle category
-    @PostMapping("/category/create")
-    public ResponseEntity<VehicleCategory> createCategory(@Valid @RequestBody VehicleCategoryCreateRequestDTO dto) {
-
-        try{
-
-            VehicleCategory category = fleetService.createCategory(dto);
-            return new ResponseEntity<>(category,HttpStatus.CREATED);
-
+    // GET all vehicles with their image URLs
+    @GetMapping("/vehicles")
+    public ResponseEntity<List<VehicleResponseDTO>> getAllVehicles() {
+        try {
+            List<VehicleResponseDTO> vehicles = fleetService.getAllVehicles();
+            return new ResponseEntity<>(vehicles, HttpStatus.OK);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    // GET a single vehicle by ID with its image URLs
+    @GetMapping("/vehicle/{id}")
+    public ResponseEntity<?> getVehicleById(@PathVariable Long id) {
+        try {
+            VehicleResponseDTO vehicle = fleetService.getVehicleById(id);
+            return new ResponseEntity<>(vehicle, HttpStatus.OK);
+        } catch (RuntimeException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+    }
+
+    @PostMapping("/vehicle/update")
+    public ResponseEntity<?> updateVehicle(@RequestBody UpdateVehicleRequestDTO dto){
+
+        boolean updated = fleetService.updateVehicle(dto);
+        if (updated){
+            return new ResponseEntity<>("Vehicle Updated Successfully",HttpStatus.ACCEPTED);
+        }else{
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }
+
 
 
 }

@@ -1,10 +1,12 @@
 package com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Repository;
 
+import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.DTOs.VehicleCategoryCreateRequestDTO;
 import com.RentEaseLanka.RentEaseLankaTeam.FleetAndInventory_Management.Model.VehicleCategory;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -12,4 +14,5 @@ public interface VehicleCategoryRepository extends JpaRepository<VehicleCategory
     Optional<VehicleCategory> findCategoryByName(String name);
 
     VehicleCategory getVehicleCategoriesById(@NotNull(message = "Category is required") Long categoryId);
+
 }

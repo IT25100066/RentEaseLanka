@@ -110,4 +110,6 @@ public class Vehicle {
         currentState.scheduleMaintenance(this);
     }
 
+    public void makeAvailable(){currentState.makeAvailable(this);}
+
 }
