@@ -28,7 +28,7 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService{
             if (!isCategoryPresent){
                 VehicleCategory category = new VehicleCategory();
                 category.setBasePrice(dto.getBasePrice());
-                category.setName(dto.getName());
+                category.setName(dto.getName().toLowerCase());
                 category.setDescription(dto.getDescription());
                 vehicleCategoryRepository.save(category);
                 log.info(category.getName()+" Vehicle Category Created");

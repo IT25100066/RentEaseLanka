@@ -1,10 +1,13 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Controller;
 
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Model.DTOs.*;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Model.VehicleCategory;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Model.VehicleStatus;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Service.FleetService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -88,6 +91,7 @@ public class FleetController {
     @PostMapping("/vehicle/makeAvailable")
     public ResponseEntity<String> makeVehicleAvailable(@RequestBody List<Long> ids){
         try{
+            log.info(ids.toString());
 
             boolean done = fleetService.makeAvailable(ids);
             if (done){
@@ -98,6 +102,22 @@ public class FleetController {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
+    }
+
+    @GetMapping("/vehicle")
+    public ResponseEntity<?> GetVehicleByFilter(@RequestParam("filterBy") String filter ,
+                                                                       @Nullable @RequestParam("category") String category ,
+                                                                         @Nullable @RequestParam("status") String status){
+
+        String filterType = filter.toLowerCase();
+        try{
+            List<VehicleResponseDTO>  vehicles = fleetService.getVehiclesByFilter(filterType,category, status);
+            return new ResponseEntity<>(vehicles,HttpStatus.OK);
+
+        }catch (Exception e){
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+        }
+
     }
 
 

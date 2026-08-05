@@ -10,10 +10,12 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Reposi
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Repository.VehicleImageRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Repository.VehicleRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Inventory_Management.Service.FileStorageService.FileStorageService;
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -41,7 +43,7 @@ public class FleetServiceImpl implements FleetService {
 
 
 
-    @Transactional
+
     public void createVehicleWithImages(VehicleCreateRequestDTO vehicleCreateRequest) {
 
         String licensePlate = vehicleCreateRequest.getLicensePlate();
@@ -169,23 +171,91 @@ public class FleetServiceImpl implements FleetService {
 
     @Override
     public List<VehicleResponseDTO> pendingVehicles() {
-        List<VehicleResponseDTO> response = new ArrayList<>();
-        List<Vehicle> vehicles = vehicleRepository.findByStatus(VehicleStatus.PENDING);
+        try{
+            List<VehicleResponseDTO> response = new ArrayList<>();
+            List<Vehicle> vehicles = vehicleRepository.findByStatus(VehicleStatus.PENDING);
+            log.info("Vehicles Pending ");
+            return getVehicleResponseDTOS(vehicles, response);
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
+
+    }
+
+    public List<VehicleResponseDTO> filterVehicleByCategory (String filter) {
+
+        try{
+
+            VehicleCategory category =  vehicleCategoryRepository.findByName(filter);
+            List<Vehicle> vehicles = category.getVehicles();
+
+            List<VehicleResponseDTO> response = new ArrayList<>();
+
+            return getVehicleResponseDTOS(vehicles, response);
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException("Category Not Found");
+        }
+
+
+
+    }
+
+    @Override
+    public List<VehicleResponseDTO> getVehiclesByFilter(String filterType,
+                                                        @Nullable String category,
+                                                        @Nullable String status) {
+
+        try{
+
+            switch (filterType){
+                case "category":
+                    return filterVehicleByCategory(category);
+                case "status":
+                    return filterVehicleByStatus(status);
+            }
+
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
+        }
+        return null;
+    }
+
+    public List<VehicleResponseDTO> filterVehicleByStatus (String status) throws Exception {
+
+        try{
+            String s = status.toUpperCase();
+            List<Vehicle> vehicles = vehicleRepository.findByStatus(VehicleStatus.valueOf(s));
+            List<VehicleResponseDTO> response = new ArrayList<>();
+            return getVehicleResponseDTOS(vehicles, response);
+        }catch (Exception e){
+            log.error(e.getMessage());
+            throw new Exception("Status must not be null");
+        }
+
+
+    }
+
+    private List<VehicleResponseDTO> getVehicleResponseDTOS(List<Vehicle> vehicles, List<VehicleResponseDTO> response) {
         for (Vehicle v : vehicles){
             VehicleResponseDTO newVehicle = new VehicleResponseDTO();
             newVehicle.setId(v.getId());
             newVehicle.setModel(v.getModel());
             newVehicle.setCategoryId(v.getCategory().getId());
             newVehicle.setStatus(v.getStatus().toString());
+            newVehicle.setCategoryName(v.getCategory().getName());
             newVehicle.setDailyRentalRate(v.getDailyRentalRate());
             newVehicle.setLicensePlate(v.getLicensePlate());
             newVehicle.setCreatedAt(v.getCreatedAt());
             newVehicle.setUpdatedAt(v.getUpdatedAt());
             newVehicle.setYear(v.getYear());
             newVehicle.setImageUrls(v.getImages().stream().map(VehicleImage::getFilePath).toList());
-
             response.add(newVehicle);
         }
+
         return response;
     }
 
