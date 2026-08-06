@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Filter API Test</title>
+    <!-- Using Tailwind CSS via CDN for rapid styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800 font-sans p-6">
+    <div class="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg mt-10 border border-gray-200">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Test Vehicle Filter API</h2>
+        
+        <form id="filterForm" class="flex flex-col sm:flex-row gap-4 mb-6">
+            <select id="filterBy" class="border border-gray-300 rounded-md px-4 py-2 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+                <option value="category">Category</option>
+                <option value="status">Status</option>
+            </select>
+
+            <input type="text" id="filterValue" placeholder="Enter category..." class="flex-1 border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" required>
+
+            <button type="submit" id="submitBtn" class="bg-blue-600 text-white font-medium px-6 py-2 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-colors shadow-sm">
+                Search
+            </button>
+        </form>
+
+        <!-- Error Message Container -->
+        <div id="errorMessage" class="hidden p-4 mb-6 bg-red-50 text-red-700 border border-red-200 rounded-md shadow-sm"></div>
+
+        <!-- Results Table Container -->
+        <div id="tableContainer" class="hidden overflow-hidden border border-gray-200 rounded-md shadow-sm">
+            <table class="w-full text-left border-collapse bg-white">
+                <thead>
+                    <tr class="bg-gray-50 border-b border-gray-200">
+                        <th class="p-3 text-sm font-semibold text-gray-700">ID</th>
+                        <th class="p-3 text-sm font-semibold text-gray-700">Make & Model</th>
+                        <th class="p-3 text-sm font-semibold text-gray-700">Category</th>
+                        <th class="p-3 text-sm font-semibold text-gray-700">Status</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody" class="divide-y divide-gray-200">
+                    <!-- Data rows will be injected here via JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Empty State Container -->
+        <p id="noResults" class="hidden text-gray-500 text-center py-8 bg-gray-50 rounded-md border border-dashed border-gray-300">
+            No vehicles found. Try a different search.
+        </p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const filterForm = document.getElementById('filterForm');
+            const filterBy = document.getElementById('filterBy');
+            const filterValue = document.getElementById('filterValue');
+            const submitBtn = document.getElementById('submitBtn');
+            const errorMessage = document.getElementById('errorMessage');
+            const tableContainer = document.getElementById('tableContainer');
+            const tableBody = document.getElementById('tableBody');
+            const noResults = document.getElementById('noResults');
+
+            // Update placeholder based on selected filter
+            filterBy.addEventListener('change', (e) => {
+                filterValue.placeholder = `Enter ${e.target.value}...`;
+                filterValue.value = ''; // clear input on switch
+            });
+
+            filterForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Reset UI State
+                errorMessage.classList.add('hidden');
+                tableContainer.classList.add('hidden');
+                noResults.classList.add('hidden');
+                tableBody.innerHTML = '';
+                
+                // Set loading state
+                submitBtn.disabled = true;
+                submitBtn.innerText = 'Searching...';
+
+                // --- CONFIGURATION ---
+                // Update this URL if your Spring Boot server is on a different port/host
+                const baseUrl = 'http://localhost:8080/api/vehicle'; 
+                
+                // Construct URL
+                let url = `${baseUrl}?filterBy=${filterBy.value}`;
+                if (filterBy.value === 'category') {
+                    url += `&category=${filterValue.value}`;
+                } else if (filterBy.value === 'status') {
+                    url += `&status=${filterValue.value}`;
+                }
+
+                try {
+                    const response = await fetch(url);
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        throw new Error(errorText || `Error ${response.status}: Failed to fetch vehicles.`);
+                    }
+
+                    const data = await response.json();
+                    
+                    if (data.length === 0) {
+                        noResults.classList.remove('hidden');
+                    } else {
+                        // Populate Table
+                        data.forEach(vehicle => {
+                            const tr = document.createElement('tr');
+                            tr.className = 'hover:bg-gray-50 transition-colors';
+                            
+                            tr.innerHTML = `
+                                <td class="p-3 text-sm text-gray-600 whitespace-nowrap">${vehicle.id || '-'}</td>
+                                <td class="p-3 text-sm text-gray-800 font-medium">${vehicle.make || ''} ${vehicle.model || ''}</td>
+                                <td class="p-3 text-sm text-gray-600">${vehicle.categoryName || '-'}</td>
+                                <td class="p-3 text-sm text-gray-600">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 uppercase tracking-wide">
+                                        ${vehicle.status || '-'}
+                                    </span>
+                                </td>
+                            `;
+                            tableBody.appendChild(tr);
+                        });
+                        tableContainer.classList.remove('hidden');
+                    }
+                } catch (error) {
+                    errorMessage.innerText = error.message;
+                    errorMessage.classList.remove('hidden');
+                } finally {
+                    // Remove loading state
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = 'Search';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
