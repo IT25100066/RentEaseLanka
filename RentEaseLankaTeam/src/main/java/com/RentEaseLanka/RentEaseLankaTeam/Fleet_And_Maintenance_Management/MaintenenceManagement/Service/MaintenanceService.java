@@ -14,9 +14,9 @@ public interface MaintenanceService {
 
     MaintenanceRecord getMaintenanceRecordById(Long id);
 
-    boolean updateStatus(Long id);
+    boolean startMaintenance(Long id);
 
-    boolean updateStatus(Long id, MaintenanceCompleteDTO dto);
+    boolean completeMaintenance(Long id, MaintenanceCompleteDTO dto);
 
     boolean cancelMaintenance(Long id);
 }

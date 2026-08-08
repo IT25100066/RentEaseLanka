@@ -1,6 +1,7 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model;
 
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model.MaintainanceStatus.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.DecimalMin;
@@ -48,4 +49,29 @@ public class MaintenanceRecord {
     private LocalDateTime scheduledDate;
     @Column(nullable = true)
     private LocalDateTime completionDate;
+
+    @PostLoad
+    public void initializeState() {
+        if (this.status == null) return;
+        switch (this.status) {
+            case SCHEDULED -> this.currentState = new ScheduledStatus();
+            case IN_PROGRESS -> this.currentState = new InProgressStatus();
+            case COMPLETED -> this.currentState = new CompletedStatus();
+            case CANCELLED -> this.currentState = new CanceledStatus();
+        }
+    }
+
+    @Transient
+    private VehicleMaintenanceState currentState;
+
+    public void maintenanceStatusChange(VehicleMaintenanceState maintenanceState, MaintenanceStatus newStatus){
+        this.currentState=maintenanceState;
+        this.status=newStatus;
+
+    }
+
+    public void scheduleMaintenance(){this.currentState.scheduledState(this);}
+    public void inProgressMaintenance(){this.currentState.inProgressState(this);}
+    public void completeMaintenance(){this.currentState.completeState(this);}
+    public void cancelMaintenance(){this.currentState.cancelState(this);}
 }

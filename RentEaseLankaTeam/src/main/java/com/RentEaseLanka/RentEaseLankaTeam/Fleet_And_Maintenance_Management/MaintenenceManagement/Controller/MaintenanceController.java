@@ -63,28 +63,36 @@ public class MaintenanceController {
 
     }
 
-    @PutMapping("/{id}/status")
-    public ResponseEntity<String> updateMaintenanceStatus(@PathVariable Long id ) {
+    //Provide the maintenance ID to proceed
+    @PutMapping("/{id}/startMaintenance")
+    public ResponseEntity<String> startMaintenance(@PathVariable Long id ) {
         try{
-            boolean updated = maintenanceService.updateStatus(id);
+            boolean updated = maintenanceService.startMaintenance(id);
             if (updated){
-                log.info("Maintenance Status Updated : Vehicle {}  ", id);
-                return new ResponseEntity<>("Maintenance Status Updated", HttpStatus.OK);
+                log.info("Maintenance completed : Vehicle {}  ", id);
+                return new ResponseEntity<>("Maintenance Started", HttpStatus.OK);
             }
-            return new ResponseEntity<>("Maintenance Status Updated Failed", HttpStatus.NOT_ACCEPTABLE);
+            return new ResponseEntity<>("Vehicle is not present in the maintenance Queue", HttpStatus.NOT_ACCEPTABLE);
         } catch (Exception e) {
             log.error(e.getMessage());
             return new ResponseEntity<>("Operation failed Please Try again! ",HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    // complete the relevant Maintenance with provided id
     @PutMapping("/{id}/completed")
-    public ResponseEntity<String> updateMaintenanceStatus(@PathVariable Long id, @RequestBody MaintenanceCompleteDTO dto ) {
-        boolean updated = maintenanceService.updateStatus(id,dto);
-        if (updated){
-            return new ResponseEntity<>("Maintenance Status Is Updated to Completed", HttpStatus.OK);
+    public ResponseEntity<?> completeMaintenance(@PathVariable Long id, @RequestBody MaintenanceCompleteDTO dto ) {
+
+        try{
+            boolean updated = maintenanceService.completeMaintenance(id,dto);
+            if (updated){
+                return new ResponseEntity<>("Maintenance is completed the vehicle is available", HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>("Maintenance Status Is Updated to Failed", HttpStatus.NOT_ACCEPTABLE);
         }
-        return new ResponseEntity<>("Maintenance Status Is Updated to Failed", HttpStatus.NOT_ACCEPTABLE);
+        return null;
+
     }
 
 
