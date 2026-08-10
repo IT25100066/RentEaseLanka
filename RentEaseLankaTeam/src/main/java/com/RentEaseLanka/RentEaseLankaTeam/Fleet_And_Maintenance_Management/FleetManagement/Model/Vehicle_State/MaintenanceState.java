@@ -32,4 +32,15 @@ public class MaintenanceState implements VehicleState{
         log.info("Maintenance complete. Vehicle is cleared for use.");
         vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
     }
+
+    @Override
+    public void outOfService(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Vehicle is under maintenance");
+    }
+
+    @Override
+    public void pendingState(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Vehicle is under maintenance");
+
+    }
 }

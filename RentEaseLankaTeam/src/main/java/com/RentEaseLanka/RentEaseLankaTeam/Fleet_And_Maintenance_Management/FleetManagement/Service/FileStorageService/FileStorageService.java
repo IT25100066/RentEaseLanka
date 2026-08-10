@@ -16,6 +16,7 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
     private final Path rootLocation = Paths.get("uploads/vehicles");
+
     @PostConstruct
     public void init() {
         try {

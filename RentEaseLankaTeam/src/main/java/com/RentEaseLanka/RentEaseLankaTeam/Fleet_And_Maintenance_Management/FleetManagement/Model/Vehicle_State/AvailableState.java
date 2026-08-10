@@ -36,4 +36,16 @@ public class AvailableState implements VehicleState {
         log.error("Validation Error: Vehicle is already marked as available.");
         throw new IllegalStateException("Validation Error: Vehicle is already marked as available.");
     }
+
+    @Override
+    public void outOfService(Vehicle vehicle) {
+        log.info("Vehicle is set to Out Of Service");
+        vehicle.changeState(VehicleStatus.OUT_OF_SERVICE, new OutOfServiceState());
+    }
+
+    @Override
+    public void pendingState(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Vehicle is already marked as available.");
+
+    }
 }

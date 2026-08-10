@@ -32,4 +32,16 @@ public class RentedState implements VehicleState{
     public void makeAvailable(Vehicle vehicle) {
         throw new IllegalStateException("Validation Error: Vehicle must be returned through the proper workflow before it can be made available.");
     }
+
+    @Override
+    public void outOfService(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Vehicle cannot set to out of service as it is in Rented state");
+
+    }
+
+    @Override
+    public void pendingState(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Vehicle cannot set to out of service as it is in Rented state");
+
+    }
 }

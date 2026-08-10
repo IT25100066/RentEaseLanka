@@ -120,5 +120,18 @@ public class FleetController {
 
     }
 
+    @DeleteMapping("/vehicle/{id}/remove")
+    public ResponseEntity<?> setVehicleToOutOfService(@PathVariable Long id){
+        try{
+            boolean outOfService = fleetService.setVehicleToOutOfService(id);
+            if(outOfService){
+                return new ResponseEntity<>("Vehicle is set to Out Of Service",HttpStatus.OK);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+        }
+        return null;
+    }
+
 
 }

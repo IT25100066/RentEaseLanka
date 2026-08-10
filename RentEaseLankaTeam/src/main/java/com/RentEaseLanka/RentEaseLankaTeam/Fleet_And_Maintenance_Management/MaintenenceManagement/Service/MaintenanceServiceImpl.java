@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -49,9 +50,11 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             }
             //checking weather the record is already recorded
             try{
-               List<MaintenanceRecord> duplicateRecords=  maintenanceRepository.findByVehicleAndOdometerAtService(vehicle, record.getOdometerAtService());
-                if (!duplicateRecords.isEmpty()){
-                    log.info("Maintenance record is already Recorded {}",duplicateRecords);
+               List<MaintenanceRecord> inProgressRecords=  maintenanceRepository.findByVehicleAndStatus(vehicle, MaintenanceStatus.SCHEDULED);
+               List<MaintenanceRecord> scheduledRecords=  maintenanceRepository.findByVehicleAndStatus(vehicle, MaintenanceStatus.IN_PROGRESS);
+
+                if (!inProgressRecords.isEmpty() || !scheduledRecords.isEmpty()){
+                    log.info("A Maintenance is already scheduled {} , {}",inProgressRecords,scheduledRecords);
                     throw new RuntimeException("Maintenance Record already exists");
                 }
             } catch (Exception e) {
@@ -70,7 +73,7 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             maintenanceRecord.maintenanceStatusChange(new ScheduledStatus(), MaintenanceStatus.SCHEDULED);
 
             //changing the relevant vehicle's vehicle status
-            vehicle.changeState(VehicleStatus.UNDER_MAINTENANCE, new MaintenanceState());
+            vehicle.scheduleMaintenance();
             vehicleRepository.save(vehicle);
             maintenanceRepository.save(maintenanceRecord);
 
@@ -147,7 +150,7 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             record.completeMaintenance();
             record.setCost(dto.getCost());
             record.setCompletionDate(LocalDateTime.now());
-            vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
+            vehicle.makeAvailable();
 
             vehicleRepository.save(vehicle);
             log.info("Vehicle status updated successfully for Vehicle : {}", record.getVehicle().getLicensePlate());
@@ -170,7 +173,7 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             Vehicle vehicle = record.getVehicle();
 
                 record.cancelMaintenance();
-                vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
+                vehicle.makeAvailable();
                 vehicleRepository.save(vehicle);
                 log.info("Maintenance Cancelled successfully for Vehicle : {}", vehicle.getLicensePlate());
                 maintenanceRepository.save(record);

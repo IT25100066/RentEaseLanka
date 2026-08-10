@@ -8,4 +8,6 @@ public interface VehicleState {
     void returnVehicle(Vehicle vehicle);
     void scheduleMaintenance(Vehicle vehicle);
     void makeAvailable(Vehicle vehicle);
+    void outOfService(Vehicle vehicle);
+    void pendingState(Vehicle vehicle);
 }

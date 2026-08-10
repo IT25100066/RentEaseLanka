@@ -9,6 +9,7 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleImage;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleStatus;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.AvailableState;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.OutOfServiceState;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleCategoryRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleImageRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleRepository;
@@ -17,6 +18,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -68,7 +71,7 @@ public class FleetServiceImpl implements FleetService {
         vehicle.setDailyRentalRate(dailyRent);
         vehicle.setCurrentOdometer(currentOdometer);
         vehicle.setCategory(category);
-        vehicle.setStatus(VehicleStatus.PENDING);
+        vehicle.pending();
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
         log.info("Vehicle Created Successfully {} ",vehicle.getLicensePlate());
 
@@ -95,8 +98,15 @@ public class FleetServiceImpl implements FleetService {
 
 
     @Override
+    @Cacheable(value = "Vehicles", key = "'allVehicles'")
     public List<VehicleResponseDTO> getAllVehicles() {
-        List<Vehicle> vehicles = vehicleRepository.findAll();
+        List<Vehicle> vehicles = new ArrayList<>();
+        for (Vehicle v : vehicleRepository.findAll()){
+            if (!v.getStatus().equals(VehicleStatus.OUT_OF_SERVICE)){
+                vehicles.add(v);
+            }
+        }
+        log.info("Vehicles Searched from database");
         return vehicles.stream()
                 .map(this::mapToResponseDTO)
                 .collect(Collectors.toList());
@@ -106,6 +116,7 @@ public class FleetServiceImpl implements FleetService {
     public VehicleResponseDTO getVehicleById(Long id) {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
+
         return mapToResponseDTO(vehicle);
     }
 
@@ -160,7 +171,7 @@ public class FleetServiceImpl implements FleetService {
         }
            try{
                for(Vehicle v : vehicles){
-                   v.changeState(VehicleStatus.AVAILABLE,new AvailableState());
+                   v.makeAvailable();
                    vehicleRepository.save(v);
                    log.info(v.getLicensePlate()+" Vehicle is Made to "+v.getStatus().toString()+" State");
                }
@@ -224,6 +235,20 @@ public class FleetServiceImpl implements FleetService {
             throw new RuntimeException(e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public boolean setVehicleToOutOfService(Long id) {
+
+        try{
+            Vehicle v = vehicleRepository.findById(id).orElseThrow();
+            v.outOfService();
+            vehicleRepository.save(v);
+            log.info("Vehicle is Out of Service now");
+            return true;
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
 
     public List<VehicleResponseDTO> filterVehicleByStatus (String status) throws Exception {

@@ -27,4 +27,5 @@ public interface FleetService {
 
     List<VehicleResponseDTO> getVehiclesByFilter(String filterType, @Nullable String category, @Nullable String status);
 
+    boolean setVehicleToOutOfService(Long id);
 }

@@ -1,8 +1,7 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model;
 
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.*;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model.MaintenanceRecord;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.AvailableState;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.VehicleState;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -71,6 +70,23 @@ public class Vehicle {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VehicleImage> images = new ArrayList<>();
 
+    private VehicleState resolveState(VehicleStatus status) {
+        return switch (status) {
+            case AVAILABLE      -> new AvailableState();
+            case RESERVED       -> new ReservedState();
+            case PENDING        -> new PendingState();
+            case RENTED         -> new RentedState();
+            case UNDER_MAINTENANCE    -> new MaintenanceState();
+            case OUT_OF_SERVICE -> new OutOfServiceState();
+        };
+    }
+
+    private VehicleState getState() {
+        if (currentState == null) {
+            currentState = resolveState(this.status);
+        }
+        return currentState;
+    }
 
     public void changeState(VehicleStatus newStatus, VehicleState newState) {
         this.status = newStatus;
@@ -82,7 +98,7 @@ public class Vehicle {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
-            changeState(VehicleStatus.AVAILABLE, new AvailableState());
+            changeState(VehicleStatus.PENDING, new AvailableState());
         }
     }
 
@@ -94,22 +110,12 @@ public class Vehicle {
 
     //Change the vehicle state
 
-    public void reserve() {
-        currentState.reserve(this);
-    }
-
-    public void rent() {
-        currentState.rent(this);
-    }
-
-    public void returnVehicle() {
-        currentState.returnVehicle(this);
-    }
-
-    public void scheduleMaintenance() {
-        currentState.scheduleMaintenance(this);
-    }
-
-    public void makeAvailable(){currentState.makeAvailable(this);}
+    public void reserve()             { getState().reserve(this); }
+    public void rent()                { getState().rent(this); }
+    public void returnVehicle()       { getState().returnVehicle(this); }
+    public void scheduleMaintenance() { getState().scheduleMaintenance(this); }
+    public void makeAvailable()       { getState().makeAvailable(this); }
+    public void outOfService()        { getState().outOfService(this); }
+    public void pending()             {getState().pendingState(this);}
 
 }

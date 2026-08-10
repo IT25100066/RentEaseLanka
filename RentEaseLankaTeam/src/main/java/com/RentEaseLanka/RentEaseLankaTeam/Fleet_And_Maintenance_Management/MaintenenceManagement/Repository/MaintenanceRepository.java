@@ -2,6 +2,7 @@ package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Mai
 
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model.MaintenanceRecord;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model.MaintenanceStatus;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -13,5 +14,9 @@ public interface MaintenanceRepository extends JpaRepository<MaintenanceRecord,L
 
 
     List<MaintenanceRecord> findByVehicleAndOdometerAtService(Vehicle vehicle, Double odometerAtService);
+
+
     List<MaintenanceRecord> findByVehicle(Vehicle vehicle);
+
+    List<MaintenanceRecord> findByVehicleAndStatus(Vehicle vehicle,MaintenanceStatus status);
 }

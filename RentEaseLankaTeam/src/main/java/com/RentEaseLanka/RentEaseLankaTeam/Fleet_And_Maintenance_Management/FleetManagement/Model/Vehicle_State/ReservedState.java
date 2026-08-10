@@ -34,4 +34,16 @@ public class ReservedState implements VehicleState{
         // Transitions back to Available
         vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
     }
+
+    @Override
+    public void outOfService(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Cannot set to out of service as the vehicle is reserved ");
+
+    }
+
+    @Override
+    public void pendingState(Vehicle vehicle) {
+        throw new IllegalStateException("Validation Error: Cannot set to pending as the vehicle is reserved ");
+
+    }
 }

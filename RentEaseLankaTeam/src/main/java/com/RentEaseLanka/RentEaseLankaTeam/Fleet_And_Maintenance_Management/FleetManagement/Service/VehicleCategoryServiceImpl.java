@@ -52,6 +52,8 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService{
            CategoryResponseDTO category = new CategoryResponseDTO();
            category.setId(c.getId());
            category.setName(c.getName());
+           category.setPrice(c.getBasePrice());
+           category.setDescription(c.getDescription());
            allCategories.add(category);
        }
 
@@ -65,6 +67,7 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService{
         VehicleCategory c = vehicleCategoryRepository.getVehicleCategoriesById(dto.getId());
         if (c != null){
             c.setBasePrice(dto.getBasePrice());
+            vehicleCategoryRepository.save(c);
             log.info( c.getName()+ "Category Price Updated ");
             return true;
         }
