@@ -98,7 +98,7 @@ public class Vehicle {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
         if (this.status == null) {
-            changeState(VehicleStatus.PENDING, new AvailableState());
+            changeState(VehicleStatus.PENDING, new PendingState());
         }
     }
 
@@ -116,6 +116,6 @@ public class Vehicle {
     public void scheduleMaintenance() { getState().scheduleMaintenance(this); }
     public void makeAvailable()       { getState().makeAvailable(this); }
     public void outOfService()        { getState().outOfService(this); }
-    public void pending()             {getState().pendingState(this);}
+    public void pending()             { getState().pendingState(this);}
 
 }

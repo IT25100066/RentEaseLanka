@@ -70,8 +70,23 @@ public class MaintenanceRecord {
 
     }
 
-    public void scheduleMaintenance(){this.currentState.scheduledState(this);}
-    public void inProgressMaintenance(){this.currentState.inProgressState(this);}
-    public void completeMaintenance(){this.currentState.completeState(this);}
-    public void cancelMaintenance(){this.currentState.cancelState(this);}
+    private VehicleMaintenanceState resolveState(VehicleMaintenanceState state){
+        switch (this.status){
+            case SCHEDULED ->    new ScheduledStatus();
+            case IN_PROGRESS ->  new InProgressStatus();
+            case COMPLETED ->   new  CompletedStatus();
+            case CANCELLED ->  new  CanceledStatus();
+            default -> this.currentState = null;
+        }
+
+        return null;
+    }
+
+    private VehicleMaintenanceState getMaintenanceState() {
+        return resolveState(this.currentState);
+    }
+    public void scheduleMaintenance(){getMaintenanceState().scheduledState(this);}
+    public void inProgressMaintenance(){getMaintenanceState().inProgressState(this);}
+    public void completeMaintenance(){getMaintenanceState().completeState(this);}
+    public void cancelMaintenance(){getMaintenanceState().cancelState(this);}
 }

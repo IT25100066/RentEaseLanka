@@ -24,7 +24,6 @@ public class VehicleCreateRequestDTO {
 
     private int year;
 
-
     @NotNull
     @Positive
     private double currentOdometer;

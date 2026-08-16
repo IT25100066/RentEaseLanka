@@ -16,7 +16,7 @@ public class RedisConfig {
     @Bean
     public RedisCacheConfiguration cacheConfiguration() {
         return RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(1))
+                .entryTtl(Duration.ofMinutes(10))
                 .disableCachingNullValues()
                 // Use the builder for the new Jackson 3-ready class
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(

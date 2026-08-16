@@ -30,7 +30,7 @@ public class VehicleCategoryController {
             return new ResponseEntity<>(category, HttpStatus.CREATED);
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Cannot Create Vehicle Category",e);
         }
 
     }

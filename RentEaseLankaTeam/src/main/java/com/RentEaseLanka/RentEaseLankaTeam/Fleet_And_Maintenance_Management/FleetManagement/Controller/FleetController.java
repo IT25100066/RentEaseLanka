@@ -26,17 +26,22 @@ public class FleetController {
     @Autowired
     private FleetService fleetService;
 
-    @RequestMapping(value ="/vehicle/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> addVehicle( @Valid @ModelAttribute VehicleCreateRequestDTO newVehicle){
+    @RequestMapping(value = "/vehicle/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<String> addVehicle(@Valid @ModelAttribute VehicleCreateRequestDTO newVehicle) {
 
-        try{
+        try {
 
             fleetService.createVehicleWithImages(newVehicle);
-            return new ResponseEntity<>("Vehicle created Successfully",HttpStatus.CREATED);
+            return new ResponseEntity<>("Vehicle created Successfully", HttpStatus.CREATED);
 
-
+        } catch (IllegalArgumentException e) {
+            // Catch your specific validation error and send a 400
+            log.warn("Validation failed: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            // Catch unexpected server errors, log the stack trace, and send a 500
+            log.error("Failed to create vehicle", e);
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
@@ -64,37 +69,37 @@ public class FleetController {
     }
 
     @PostMapping("/vehicle/update")
-    public ResponseEntity<?> updateVehicle(@RequestBody UpdateVehicleRequestDTO dto){
+    public ResponseEntity<?> updateVehicle(@RequestBody UpdateVehicleRequestDTO dto) {
 
         boolean updated = fleetService.updateVehicle(dto);
-        if (updated){
-            return new ResponseEntity<>("Vehicle Updated Successfully",HttpStatus.ACCEPTED);
-        }else{
+        if (updated) {
+            return new ResponseEntity<>("Vehicle Updated Successfully", HttpStatus.ACCEPTED);
+        } else {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
     }
 
     @GetMapping("/pendingVehicles")
-    public ResponseEntity<List<VehicleResponseDTO>> pendingVehicles(){
-        try{
-            List<VehicleResponseDTO> vehicles =  fleetService.pendingVehicles();
-            if(vehicles.isEmpty()){
+    public ResponseEntity<List<VehicleResponseDTO>> pendingVehicles() {
+        try {
+            List<VehicleResponseDTO> vehicles = fleetService.pendingVehicles();
+            if (vehicles.isEmpty()) {
                 log.info("No pending vehicles present");
             }
-            return new ResponseEntity<>(vehicles,HttpStatus.OK);
+            return new ResponseEntity<>(vehicles, HttpStatus.OK);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
     }
 
     @PostMapping("/vehicle/makeAvailable")
-    public ResponseEntity<String> makeVehicleAvailable(@RequestBody List<Long> ids){
-        try{
+    public ResponseEntity<String> makeVehicleAvailable(@RequestBody List<Long> ids) {
+        try {
             log.info(ids.toString());
 
             boolean done = fleetService.makeAvailable(ids);
-            if (done){
+            if (done) {
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -105,33 +110,46 @@ public class FleetController {
     }
 
     @GetMapping("/vehicle")
-    public ResponseEntity<?> GetVehicleByFilter(@RequestParam("filterBy") String filter ,
-                                                                       @Nullable @RequestParam("category") String category ,
-                                                                         @Nullable @RequestParam("status") String status){
+    public ResponseEntity<?> GetVehicleByFilter(@RequestParam("filterBy") String filter,
+            @Nullable @RequestParam("category") String category,
+            @Nullable @RequestParam("status") String status) {
 
         String filterType = filter.toLowerCase();
-        try{
-            List<VehicleResponseDTO>  vehicles = fleetService.getVehiclesByFilter(filterType,category, status);
-            return new ResponseEntity<>(vehicles,HttpStatus.OK);
+        try {
+            List<VehicleResponseDTO> vehicles = fleetService.getVehiclesByFilter(filterType, category, status);
+            return new ResponseEntity<>(vehicles, HttpStatus.OK);
 
-        }catch (Exception e){
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         }
 
     }
 
     @DeleteMapping("/vehicle/{id}/remove")
-    public ResponseEntity<?> setVehicleToOutOfService(@PathVariable Long id){
-        try{
+    public ResponseEntity<?> setVehicleToOutOfService(@PathVariable Long id) {
+        try {
             boolean outOfService = fleetService.setVehicleToOutOfService(id);
-            if(outOfService){
-                return new ResponseEntity<>("Vehicle is set to Out Of Service",HttpStatus.OK);
+            if (outOfService) {
+                return new ResponseEntity<>("Vehicle is set to Out Of Service", HttpStatus.OK);
             }
         } catch (Exception e) {
-            return new ResponseEntity<>(e.getMessage(),HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         }
         return null;
     }
 
+    @DeleteMapping("/vehicle/{id}/delete")
+    public ResponseEntity<?> deleteVehicle(@PathVariable Long id) {
+        try {
+            boolean deleted = fleetService.deleteVehicle(id);
+            if (deleted) {
+                return new ResponseEntity<>("Vehicle deleted Successfully", HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("Vehicle could not be deleted", HttpStatus.INTERNAL_SERVER_ERROR);
+            }
+        } catch (Exception e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+    }
 
 }

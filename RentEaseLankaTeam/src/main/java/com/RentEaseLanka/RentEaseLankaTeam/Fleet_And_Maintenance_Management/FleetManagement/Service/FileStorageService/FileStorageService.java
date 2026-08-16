@@ -2,6 +2,7 @@ package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Fle
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -49,5 +50,13 @@ public class FileStorageService {
         return storedPaths;
     }
 
+    public boolean deleteVehicleFiles(Long vehicleId) {
+        Path vehicleDir = this.rootLocation.resolve("vehicle_" + vehicleId);
+        try {
+            return FileSystemUtils.deleteRecursively(vehicleDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete vehicle directory", e);
+        }
+    }
 
 }

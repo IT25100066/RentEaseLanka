@@ -1,19 +1,15 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service;
 
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.UpdateOdometerDTO;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.UpdateVehicleRequestDTO;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.VehicleCreateRequestDTO;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.VehicleResponseDTO;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.*;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleCategory;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleImage;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleStatus;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.AvailableState;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.OutOfServiceState;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleCategoryRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleImageRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service.FileStorageService.FileStorageService;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -35,19 +31,17 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FleetServiceImpl implements FleetService {
 
-
     @Autowired
-    private  VehicleRepository vehicleRepository;
+    private VehicleRepository vehicleRepository;
     @Autowired
-    private  VehicleImageRepository vehicleImageRepository;
+    private VehicleImageRepository vehicleImageRepository;
     @Autowired
-    private  FileStorageService fileStorageService;
+    private FileStorageService fileStorageService;
     @Autowired
     private VehicleCategoryRepository vehicleCategoryRepository;
 
-
-
-
+    @Transactional
+    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
     public void createVehicleWithImages(VehicleCreateRequestDTO vehicleCreateRequest) {
 
         String licensePlate = vehicleCreateRequest.getLicensePlate();
@@ -56,11 +50,13 @@ public class FleetServiceImpl implements FleetService {
         int year = vehicleCreateRequest.getYear();
         BigDecimal dailyRent = vehicleCreateRequest.getDailyRate();
         double currentOdometer = vehicleCreateRequest.getCurrentOdometer();
-        VehicleCategory category = vehicleCategoryRepository.getVehicleCategoriesById(vehicleCreateRequest.getCategoryId());
+        VehicleCategory category = vehicleCategoryRepository
+                .getVehicleCategoriesById(vehicleCreateRequest.getCategoryId());
 
         // 1. Business Validation: Prevent duplicate license plates
         if (vehicleRepository.existsByLicensePlate(licensePlate)) {
-            throw new IllegalArgumentException("Validation Error: A vehicle with license plate " + licensePlate + " already exists.");
+            throw new IllegalArgumentException(
+                    "Validation Error: A vehicle with license plate " + licensePlate + " already exists.");
         }
 
         // 2. Persist the Parent Entity (Vehicle)
@@ -71,9 +67,8 @@ public class FleetServiceImpl implements FleetService {
         vehicle.setDailyRentalRate(dailyRent);
         vehicle.setCurrentOdometer(currentOdometer);
         vehicle.setCategory(category);
-        vehicle.pending();
         Vehicle savedVehicle = vehicleRepository.save(vehicle);
-        log.info("Vehicle Created Successfully {} ",vehicle.getLicensePlate());
+        log.info("Vehicle Created Successfully {} ", vehicle.getLicensePlate());
 
         // 3. Delegate file system operations to the FileStorageService
         List<String> relativeImagePaths = fileStorageService.storeFiles(savedVehicle.getId(), Images);
@@ -96,13 +91,12 @@ public class FleetServiceImpl implements FleetService {
         // Return the fully constructed entity to the Controller
     }
 
-
     @Override
     @Cacheable(value = "Vehicles", key = "'allVehicles'")
     public List<VehicleResponseDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
-        for (Vehicle v : vehicleRepository.findAll()){
-            if (!v.getStatus().equals(VehicleStatus.OUT_OF_SERVICE)){
+        for (Vehicle v : vehicleRepository.findAll()) {
+            if (!v.getStatus().equals(VehicleStatus.OUT_OF_SERVICE)) {
                 vehicles.add(v);
             }
         }
@@ -123,21 +117,21 @@ public class FleetServiceImpl implements FleetService {
     @Override
     public boolean updateVehicle(UpdateVehicleRequestDTO dto) {
 
-        try{
-                Optional<Vehicle> vehicle = vehicleRepository.findById(dto.getId());
-                if (vehicle.isEmpty()){
-                    log.info("Vehicle not present in the Database");
-                    return false;
-                }
-                Vehicle vehicle1 = vehicleRepository.getReferenceById(dto.getId());
-                vehicle1.setCategory(vehicleCategoryRepository.getVehicleCategoriesById(dto.getCategoryId()));
-                vehicle1.setDailyRentalRate(dto.getDailyRentalRate());
-                vehicle1.setModel(dto.getModel());
-                vehicle1.setUpdatedAt(LocalDateTime.now());
+        try {
+            Optional<Vehicle> vehicle = vehicleRepository.findById(dto.getId());
+            if (vehicle.isEmpty()) {
+                log.info("Vehicle not present in the Database");
+                return false;
+            }
+            Vehicle vehicle1 = vehicleRepository.getReferenceById(dto.getId());
+            vehicle1.setCategory(vehicleCategoryRepository.getVehicleCategoriesById(dto.getCategoryId()));
+            vehicle1.setDailyRentalRate(dto.getDailyRentalRate());
+            vehicle1.setModel(dto.getModel());
+            vehicle1.setUpdatedAt(LocalDateTime.now());
 
-                log.info("Vehicle Updated : Vehicle id "+ dto.getId());
-                vehicleRepository.save(vehicle1);
-                return true;
+            log.info("Vehicle Updated : Vehicle id " + dto.getId());
+            vehicleRepository.save(vehicle1);
+            return true;
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -146,8 +140,8 @@ public class FleetServiceImpl implements FleetService {
     }
 
     @Override
-    public boolean updateOdometer(UpdateOdometerDTO dto){
-        try{
+    public boolean updateOdometer(UpdateOdometerDTO dto) {
+        try {
             Vehicle vehicle = vehicleRepository.findById(dto.getId()).orElseThrow();
             vehicle.setCurrentOdometer(dto.getCurrentOdometer());
             log.info("Odometer Updated Successfully");
@@ -158,34 +152,11 @@ public class FleetServiceImpl implements FleetService {
         }
         return false;
 
-
     }
-
-    // use an array to get all the list of IDs that are required to make available
-    @Override
-    public boolean makeAvailable(List<Long> vehicleIdList){
-        List<Vehicle> vehicles = new ArrayList<>();
-        for(Long id : vehicleIdList){
-            Vehicle v = vehicleRepository.findById(id).orElseThrow();
-            vehicles.add(v);
-        }
-           try{
-               for(Vehicle v : vehicles){
-                   v.makeAvailable();
-                   vehicleRepository.save(v);
-                   log.info(v.getLicensePlate()+" Vehicle is Made to "+v.getStatus().toString()+" State");
-               }
-               return true;
-           } catch (IllegalStateException e) {
-               throw new RuntimeException(e.getMessage());
-           }
-    }
-
-
 
     @Override
     public List<VehicleResponseDTO> pendingVehicles() {
-        try{
+        try {
             List<VehicleResponseDTO> response = new ArrayList<>();
             List<Vehicle> vehicles = vehicleRepository.findByStatus(VehicleStatus.PENDING);
             log.info("Vehicles Pending ");
@@ -197,40 +168,79 @@ public class FleetServiceImpl implements FleetService {
 
     }
 
-    public List<VehicleResponseDTO> filterVehicleByCategory (String category) {
+    @Transactional
+    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
+    public VehicleRemoveResponseDTO removePendingVehicles(Long id) {
+        try {
 
-        try{
+            Vehicle v = vehicleRepository.findById(id).orElseThrow();
 
-            VehicleCategory c =  vehicleCategoryRepository.findByName(category);
+            VehicleRemoveResponseDTO response = new VehicleRemoveResponseDTO();
+            response.setMassage("Vehicle cannot verified Please try again with true verification details");
+            response.setLicencePlate(v.getLicensePlate());
+            vehicleRepository.delete(v);
+            log.info("Vehicle Removed Successfully");
+            return response;
+
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            throw new RuntimeException("Vehicle could not be removed");
+        }
+    }
+
+    // use an array to get all the list of IDs that are required to make available
+    @Override
+    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
+    public boolean makeAvailable(List<Long> vehicleIdList) {
+        List<Vehicle> vehicles = new ArrayList<>();
+        for (Long id : vehicleIdList) {
+            Vehicle v = vehicleRepository.findById(id).orElseThrow();
+            vehicles.add(v);
+        }
+        try {
+            for (Vehicle v : vehicles) {
+                v.makeAvailable();
+                vehicleRepository.save(v);
+                log.info(v.getLicensePlate() + " Vehicle is Made to " + v.getStatus().toString() + " State");
+            }
+            return true;
+        } catch (IllegalStateException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+    }
+
+    public List<VehicleResponseDTO> filterVehicleByCategory(String category) {
+
+        try {
+
+            VehicleCategory c = vehicleCategoryRepository.findByName(category);
             List<Vehicle> vehicles = c.getVehicles();
 
             List<VehicleResponseDTO> response = new ArrayList<>();
 
             return getVehicleResponseDTOS(vehicles, response);
 
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Category Not Found");
         }
-
-
 
     }
 
     @Override
     public List<VehicleResponseDTO> getVehiclesByFilter(String filterType,
-                                                        @Nullable String category,
-                                                        @Nullable String status) {
+            @Nullable String category,
+            @Nullable String status) {
 
-        try{
-            switch (filterType){
+        try {
+            switch (filterType) {
                 case "category":
                     return filterVehicleByCategory(category);
                 case "status":
                     return filterVehicleByStatus(status);
             }
 
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
@@ -240,7 +250,7 @@ public class FleetServiceImpl implements FleetService {
     @Override
     public boolean setVehicleToOutOfService(Long id) {
 
-        try{
+        try {
             Vehicle v = vehicleRepository.findById(id).orElseThrow();
             v.outOfService();
             vehicleRepository.save(v);
@@ -251,23 +261,22 @@ public class FleetServiceImpl implements FleetService {
         }
     }
 
-    public List<VehicleResponseDTO> filterVehicleByStatus (String status) throws Exception {
+    public List<VehicleResponseDTO> filterVehicleByStatus(String status) throws Exception {
 
-        try{
+        try {
             String s = status.toUpperCase();
             List<Vehicle> vehicles = vehicleRepository.findByStatus(VehicleStatus.valueOf(s));
             List<VehicleResponseDTO> response = new ArrayList<>();
             return getVehicleResponseDTOS(vehicles, response);
-        }catch (Exception e){
+        } catch (Exception e) {
             log.error(e.getMessage());
             throw new Exception("Invalid status Provided");
         }
 
-
     }
 
     private List<VehicleResponseDTO> getVehicleResponseDTOS(List<Vehicle> vehicles, List<VehicleResponseDTO> response) {
-        for (Vehicle v : vehicles){
+        for (Vehicle v : vehicles) {
             VehicleResponseDTO newVehicle = new VehicleResponseDTO();
             newVehicle.setId(v.getId());
             newVehicle.setModel(v.getModel());
@@ -295,8 +304,8 @@ public class FleetServiceImpl implements FleetService {
         // Collect image URLs from the vehicle's images
         List<String> imageUrls = vehicle.getImages() != null
                 ? vehicle.getImages().stream()
-                    .map(VehicleImage::getFilePath)
-                    .collect(Collectors.toList())
+                        .map(VehicleImage::getFilePath)
+                        .collect(Collectors.toList())
                 : new ArrayList<>();
 
         return VehicleResponseDTO.builder()
@@ -315,6 +324,20 @@ public class FleetServiceImpl implements FleetService {
                 .build();
     }
 
+    @Override
+    @Transactional
+    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
+    public boolean deleteVehicle(Long id) {
+        try {
+            Vehicle vehicle = vehicleRepository.findById(id).orElseThrow();
+            vehicleImageRepository.deleteByVehicle(vehicle);
+            vehicleRepository.deleteById(vehicle.getId());
+            fileStorageService.deleteVehicleFiles(vehicle.getId());
+            return true;
+        } catch (Exception e) {
+            log.error(e.getMessage(), "Vehicle Could not Delete from the system");
+            return false;
+        }
+    }
 
 }
-
