@@ -5,7 +5,7 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel="spring")
 public interface VehicleCategoryMapper {
 
     @Mapping(source = "basePrice", target = "price")

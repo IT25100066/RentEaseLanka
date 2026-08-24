@@ -11,7 +11,6 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service.FileStorageService.FileStorageService;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
@@ -29,20 +28,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@AllArgsConstructor
 @RequiredArgsConstructor
 @Slf4j
 public class FleetServiceImpl implements FleetService {
 
     @Autowired
-    private VehicleRepository vehicleRepository;
+    private final VehicleRepository vehicleRepository;
     @Autowired
-    private VehicleImageRepository vehicleImageRepository;
+    private final VehicleImageRepository vehicleImageRepository;
     @Autowired
-    private FileStorageService fileStorageService;
+    private final FileStorageService fileStorageService;
     @Autowired
-    private VehicleCategoryRepository vehicleCategoryRepository;
-    @Autowired
+    private final VehicleCategoryRepository vehicleCategoryRepository;
+    @Autowired(required = true)
     private final VehicleMapper vehicleMapper;
 
     @Transactional

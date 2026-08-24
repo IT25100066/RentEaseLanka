@@ -3,7 +3,7 @@ FROM node:22-alpine3.21
 WORKDIR /app
 
 # Install dependencies first
-COPY package*.json ./
+COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy the rest of the code
