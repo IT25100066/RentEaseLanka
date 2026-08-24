@@ -45,11 +45,10 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             }
             //checking weather the record is already recorded
             try{
-               List<MaintenanceRecord> inProgressRecords=  maintenanceRepository.findByVehicleAndStatus(vehicle, MaintenanceStatus.SCHEDULED);
                List<MaintenanceRecord> scheduledRecords=  maintenanceRepository.findByVehicleAndStatus(vehicle, MaintenanceStatus.IN_PROGRESS);
 
-                if (!inProgressRecords.isEmpty() || !scheduledRecords.isEmpty()){
-                    log.info("A Maintenance is already scheduled {} , {}",inProgressRecords,scheduledRecords);
+                if ( !scheduledRecords.isEmpty()){
+                    log.info("A Maintenance is already scheduled {} , {}",scheduledRecords);
                     throw new RuntimeException("Maintenance Record already exists");
                 }
             } catch (Exception e) {
@@ -65,7 +64,7 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             maintenanceRecord.setDescription(record.getDescription());
             maintenanceRecord.setOdometerAtService(record.getOdometerAtService());
             maintenanceRecord.setScheduledDate(LocalDateTime.now());
-            maintenanceRecord.scheduleMaintenance();
+          
 
             //changing the relevant vehicle's vehicle status
             vehicle.scheduleMaintenance();

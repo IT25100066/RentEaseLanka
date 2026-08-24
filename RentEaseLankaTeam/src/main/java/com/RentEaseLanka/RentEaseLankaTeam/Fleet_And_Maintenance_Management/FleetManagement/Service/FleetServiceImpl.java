@@ -92,7 +92,7 @@ public class FleetServiceImpl implements FleetService {
     }
 
     @Override
-    @Cacheable(value = "Vehicles", key = "'allVehicles'")
+//    @Cacheable(value = "Vehicles", key = "'allVehicles'")
     public List<VehicleResponseDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
         for (Vehicle v : vehicleRepository.findAll()) {

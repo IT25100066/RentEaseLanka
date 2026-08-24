@@ -32,6 +32,7 @@ public class MaintenanceController {
                 return new  ResponseEntity<>("Maintenance Scheduled Failed", HttpStatus.NOT_ACCEPTABLE);
             }
         }catch (Exception e){
+            log.info("Error while scheduling maintenance: {}", e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
         }
 

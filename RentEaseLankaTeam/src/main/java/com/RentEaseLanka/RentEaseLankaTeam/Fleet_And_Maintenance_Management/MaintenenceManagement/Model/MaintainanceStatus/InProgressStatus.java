@@ -24,8 +24,9 @@ public class InProgressStatus implements VehicleMaintenanceState{
     public void completeState(MaintenanceRecord record) {
         record.setStatus(MaintenanceStatus.COMPLETED);
         record.setCompletionDate(LocalDateTime.now());
-        record.getVehicle().changeState(VehicleStatus.AVAILABLE, new AvailableState());
         record.setCurrentState(new CompletedStatus());
+        
+        
     }
 
     @Override

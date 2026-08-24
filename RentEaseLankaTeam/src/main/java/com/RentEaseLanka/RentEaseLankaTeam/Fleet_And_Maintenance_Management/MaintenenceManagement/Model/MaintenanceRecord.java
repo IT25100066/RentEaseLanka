@@ -50,6 +50,17 @@ public class MaintenanceRecord {
     @Column(nullable = true)
     private LocalDateTime completionDate;
 
+    @PrePersist
+    protected void onCreate() {
+    if (this.status == null) {
+        maintenanceStatusChange(new ScheduledStatus(), MaintenanceStatus.SCHEDULED);
+    }
+    if (this.scheduledDate == null) {
+        this.scheduledDate = LocalDateTime.now();
+    }
+}
+
+
     @PostLoad
     public void initializeState() {
         if (this.status == null) return;
@@ -70,21 +81,30 @@ public class MaintenanceRecord {
 
     }
 
-    private VehicleMaintenanceState resolveState(VehicleMaintenanceState state){
-        switch (this.status){
+    private VehicleMaintenanceState resolveState(){
+
+       if (this.status == null) return new ScheduledStatus();
+
+        return switch (this.status){
             case SCHEDULED ->    new ScheduledStatus();
             case IN_PROGRESS ->  new InProgressStatus();
             case COMPLETED ->   new  CompletedStatus();
             case CANCELLED ->  new  CanceledStatus();
-            default -> this.currentState = null;
-        }
-
-        return null;
+            default -> new ScheduledStatus();
+             
+        };
+        
+       
     }
 
     private VehicleMaintenanceState getMaintenanceState() {
-        return resolveState(this.currentState);
+        if (this.currentState == null) {
+        this.currentState = resolveState();
+        }
+
+    return this.currentState;
     }
+
     public void scheduleMaintenance(){getMaintenanceState().scheduledState(this);}
     public void inProgressMaintenance(){getMaintenanceState().inProgressState(this);}
     public void completeMaintenance(){getMaintenanceState().completeState(this);}

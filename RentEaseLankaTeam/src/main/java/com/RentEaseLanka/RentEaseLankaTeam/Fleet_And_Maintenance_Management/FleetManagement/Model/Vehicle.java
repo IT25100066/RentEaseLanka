@@ -68,6 +68,7 @@ public class Vehicle {
 
     //Link Vehicle Image Entity which consist a list of VehicleImage objects
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<VehicleImage> images = new ArrayList<>();
 
     private VehicleState resolveState(VehicleStatus status) {

@@ -27,6 +27,7 @@ public class FileStorageService {
             throw new RuntimeException("Init failed");
         }
     }
+
     public List<String> storeFiles(Long vehicleId, List<MultipartFile> files) {
         Path vehicleDir = this.rootLocation.resolve("vehicle_" + vehicleId);
         try {
