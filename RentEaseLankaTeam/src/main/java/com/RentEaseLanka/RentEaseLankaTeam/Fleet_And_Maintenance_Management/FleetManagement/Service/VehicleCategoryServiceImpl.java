@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Mappers.VehicleCategoryMapper;
 
 @Slf4j
 @Service
@@ -18,6 +20,9 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService{
 
     @Autowired
     private VehicleCategoryRepository vehicleCategoryRepository;
+
+    @Autowired
+    private VehicleCategoryMapper vehicleCategoryMapper;
 
     @Override
     public VehicleCategory createCategory(VehicleCategoryCreateRequestDTO dto) {
@@ -44,22 +49,11 @@ public class VehicleCategoryServiceImpl implements VehicleCategoryService{
 
     @Override
     public List<CategoryResponseDTO> getAllCategories() {
-
-        List<CategoryResponseDTO> allCategories = new ArrayList<>();
         List<VehicleCategory> vehicleCategories = vehicleCategoryRepository.findAll();
 
-       for(VehicleCategory c : vehicleCategories){
-           CategoryResponseDTO category = new CategoryResponseDTO();
-           category.setId(c.getId());
-           category.setName(c.getName());
-           category.setPrice(c.getBasePrice());
-           category.setDescription(c.getDescription());
-           allCategories.add(category);
-       }
-
-       return allCategories;
-
-
+        return vehicleCategories.stream()
+                .map(vehicleCategoryMapper::toDto)
+                .collect(Collectors.toList());
     }
 
     @Override

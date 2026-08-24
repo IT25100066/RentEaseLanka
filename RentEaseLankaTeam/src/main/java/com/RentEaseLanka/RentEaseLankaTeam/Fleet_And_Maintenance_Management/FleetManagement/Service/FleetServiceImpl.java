@@ -1,6 +1,7 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service;
 
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.*;
+import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Mappers.VehicleMapper;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleCategory;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleImage;
@@ -11,6 +12,7 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service.FileStorageService.FileStorageService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,7 @@ import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
+@RequiredArgsConstructor
 @Slf4j
 public class FleetServiceImpl implements FleetService {
 
@@ -39,6 +42,8 @@ public class FleetServiceImpl implements FleetService {
     private FileStorageService fileStorageService;
     @Autowired
     private VehicleCategoryRepository vehicleCategoryRepository;
+    @Autowired
+    private final VehicleMapper vehicleMapper;
 
     @Transactional
     @CacheEvict(value = "Vehicles", key = "'allVehicles'")
@@ -102,7 +107,7 @@ public class FleetServiceImpl implements FleetService {
         }
         log.info("Vehicles Searched from database");
         return vehicles.stream()
-                .map(this::mapToResponseDTO)
+                .map(vehicleMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -111,7 +116,7 @@ public class FleetServiceImpl implements FleetService {
         Vehicle vehicle = vehicleRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + id));
 
-        return mapToResponseDTO(vehicle);
+        return vehicleMapper.toDto(vehicle);
     }
 
     @Override
@@ -277,52 +282,14 @@ public class FleetServiceImpl implements FleetService {
 
     private List<VehicleResponseDTO> getVehicleResponseDTOS(List<Vehicle> vehicles, List<VehicleResponseDTO> response) {
         for (Vehicle v : vehicles) {
-            VehicleResponseDTO newVehicle = new VehicleResponseDTO();
-            newVehicle.setId(v.getId());
-            newVehicle.setModel(v.getModel());
-            newVehicle.setCategoryId(v.getCategory().getId());
-            newVehicle.setStatus(v.getStatus().toString());
-            newVehicle.setCategoryName(v.getCategory().getName());
-            newVehicle.setDailyRentalRate(v.getDailyRentalRate());
-            newVehicle.setLicensePlate(v.getLicensePlate());
-            newVehicle.setCreatedAt(v.getCreatedAt());
-            newVehicle.setUpdatedAt(v.getUpdatedAt());
-            newVehicle.setYear(v.getYear());
-            newVehicle.setImageUrls(v.getImages().stream().map(VehicleImage::getFilePath).toList());
+            VehicleResponseDTO newVehicle = vehicleMapper.toDto(v);
             response.add(newVehicle);
         }
 
         return response;
     }
 
-    /**
-     * Maps a Vehicle entity to a VehicleResponseDTO.
-     * Flattens category info and collects image file paths as URLs.
-     */
-    private VehicleResponseDTO mapToResponseDTO(Vehicle vehicle) {
 
-        // Collect image URLs from the vehicle's images
-        List<String> imageUrls = vehicle.getImages() != null
-                ? vehicle.getImages().stream()
-                        .map(VehicleImage::getFilePath)
-                        .collect(Collectors.toList())
-                : new ArrayList<>();
-
-        return VehicleResponseDTO.builder()
-                .id(vehicle.getId())
-                .licensePlate(vehicle.getLicensePlate())
-                .model(vehicle.getModel())
-                .year(vehicle.getYear())
-                .currentOdometer(vehicle.getCurrentOdometer())
-                .status(vehicle.getStatus() != null ? vehicle.getStatus().name() : null)
-                .dailyRentalRate(vehicle.getDailyRentalRate())
-                .categoryId(vehicle.getCategory() != null ? vehicle.getCategory().getId() : null)
-                .categoryName(vehicle.getCategory() != null ? vehicle.getCategory().getName() : null)
-                .createdAt(vehicle.getCreatedAt())
-                .updatedAt(vehicle.getUpdatedAt())
-                .imageUrls(imageUrls)
-                .build();
-    }
 
     @Override
     @Transactional
@@ -338,6 +305,18 @@ public class FleetServiceImpl implements FleetService {
             log.error(e.getMessage(), "Vehicle Could not Delete from the system");
             return false;
         }
+    }
+
+    public List<VehicleResponseDTO> getVehicles (){
+        List<Vehicle> vehicles = vehicleRepository.findAll();
+
+        List<VehicleResponseDTO> response = new ArrayList<>();
+        for (Vehicle v : vehicles) {
+            VehicleResponseDTO vehicle = vehicleMapper.toDto(v);
+            response.add(vehicle);
+        }
+
+        return response;
     }
 
 }
