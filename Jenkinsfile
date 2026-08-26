@@ -21,9 +21,9 @@ pipeline {
             steps {
 
                 withCredentials([file(credentialsId: 'renteaselanka_credentials', variable: 'ENV_FILE_PATH')]) {
-                    bat 'cp "$ENV_FILE_PATH" .env'
-                    bat 'docker compose --env-file .env up -d'
-                    bat 'rm .env'
+                    bat '''
+                docker compose --env-file "%ENV_FILE_PATH%" build
+            '''
                 }
 
 
