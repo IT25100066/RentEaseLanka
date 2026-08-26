@@ -34,14 +34,16 @@ pipeline {
         // ── Push to Docker Hub ────────────────────────────────
         stage('Push to Docker Hub') {
             when {
-                branch 'main'
+                branch 'Ferature_Fleet_management'
             }
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'docker_login',
+                    credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
+                    // Pipe the token directly into stdin
+                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin" {
                     bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
 
                     // Push backend
