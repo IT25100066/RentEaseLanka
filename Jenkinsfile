@@ -33,15 +33,16 @@ pipeline {
 
         // ── Push to Docker Hub ────────────────────────────────
         stage('Push to Docker Hub') {
+
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'docker_login',
+                    credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     // Pipe the token directly into stdin
-                    powershell '$env:DOCKER_PASS | docker login -u $env:DOCKER_USER --password-stdin'
-                    
+                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin" 
+                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
 
                     // Push backend
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}"
