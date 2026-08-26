@@ -28,7 +28,6 @@ pipeline {
         stage('Tag Images') {
             steps {
                 bat "docker tag ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}"
-                bat "docker tag ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}"
             }
         }
 
@@ -53,10 +52,7 @@ pipeline {
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}"
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest"
 
-                    // Push nginx
-                    bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-nginx:${IMAGE_TAG}"
-                    bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-nginx:latest"
-
+                  
                     bat "docker logout"
                 }
             }

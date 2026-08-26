@@ -21,10 +21,11 @@ services:
 
   # 2. Spring Boot Backend
   backend:
-    # image: it25100066/renteaselanka-backend:1.0.0
     build:
       context: ./RentEaseLankaTeam
       dockerfile: Dockerfile
+      tags:
+        - it25100066/renteaselankabackend:latest
     container_name: RentEaseLanka-Backend
     ports:
       - "8081:8081"
