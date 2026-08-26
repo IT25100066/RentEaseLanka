@@ -43,13 +43,13 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat '''
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}" + '''
-                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest" + '''
-                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}" + '''
-                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest" + '''
-                        docker logout
-                    '''
+                echo %DOCKER_PASS%| docker login -u %DOCKER_USER% --password-stdin
+                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-backend:%IMAGE_TAG%
+                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-backend:latest
+                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-frontend:%IMAGE_TAG%
+                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-frontend:latest
+                docker logout
+            '''
                 }
             }
         }
