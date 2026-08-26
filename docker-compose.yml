@@ -25,7 +25,7 @@ services:
       context: ./RentEaseLankaTeam
       dockerfile: Dockerfile
       tags:
-        - it25100066/renteaselankabackend:latest
+        - it25100066/renteaselanka-backend:latest
     container_name: RentEaseLanka-Backend
     ports:
       - "8081:8081"
