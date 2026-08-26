@@ -38,7 +38,7 @@ pipeline {
             }
             steps {
                 withCredentials([usernamePassword(
-                    credentialsId: 'dockerhub-credentials',
+                    credentialsId: 'docker_login',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
@@ -48,9 +48,9 @@ pipeline {
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}"
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest"
 
-                    // Push frontend
-                    bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}"
-                    bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest"
+                    // // Push frontend
+                    // bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}"
+                    // bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest"
 
                   
                     bat "docker logout"
@@ -63,8 +63,8 @@ pipeline {
             steps {
                 bat "docker-compose down --rmi local || exit 0"
                 bat "docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG} || exit 0"
-                bat "docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG} || exit 0"
-                bat "docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-nginx:${IMAGE_TAG} || exit 0"
+                // bat "docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG} || exit 0"
+               
             }
         }
     }
@@ -74,8 +74,8 @@ pipeline {
             echo """
             ✅ All images pushed successfully
             Backend:  ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest
-            Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest
-            Nginx:    ${DOCKERHUB_USERNAME}/${APP_NAME}-nginx:latest
+            // Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest
+          
             """
         }
         failure {
