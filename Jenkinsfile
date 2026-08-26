@@ -19,8 +19,23 @@ pipeline {
         // ── Build all custom service images ──────────────────
         stage('Build Images') {
             steps {
-                echo "Building all services..."
-                bat "docker-compose build"
+
+                withCredentials([file(credentialsId: 'renteaselanka_credentials', variable: 'ENV_FILE_PATH')]) {
+                    sh '''
+                        # Copy the secret file to .env in the workspace
+                        cp $ENV_FILE_PATH .env
+                        
+                        # Docker Compose automatically loads a .env file located next to docker-compose.yml
+                        docker compose --env-file .env up -d
+                        
+                        # Remove the file after deployment to maintain workspace hygiene
+                        rm .env
+                    '''
+                }
+
+
+                // echo "Building all services..."
+                // bat "docker-compose build"
             }
         }
 

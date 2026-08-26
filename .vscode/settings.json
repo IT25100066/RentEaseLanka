@@ -1,5 +1,7 @@
 {
     "java.debug.settings.onBuildFailureProceed": true,
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.compile.nullAnalysis.mode": "automatic"
+    "java.compile.nullAnalysis.mode": "automatic",
+    "jenkins.url": "\"http://localhost:8080/. admin 590106acd0510edd180a7b652415f3dc\"",
+    "jenkins.views.system.enabled": true
 }
