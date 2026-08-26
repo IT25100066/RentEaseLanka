@@ -47,6 +47,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      tags:
+        - it25100066/renteaselanka-frontend:latest
     container_name: Rent-Ease-Lanka-Frontend
     ports:
       - "5173:5173" # Exposing port 5173 for the Vite development server
