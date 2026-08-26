@@ -41,9 +41,7 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     // Pipe the token directly into stdin
-                    bat "echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin" 
                     bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-
                     // Push backend
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}"
                     bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest"
@@ -53,7 +51,7 @@ pipeline {
                     // bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest"
 
                   
-                    bat "docker logout"
+                    bat 'docker logout'
                 }
             }
         }
