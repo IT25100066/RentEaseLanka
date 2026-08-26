@@ -8,7 +8,6 @@ pipeline {
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
@@ -16,61 +15,53 @@ pipeline {
             }
         }
 
-        // ── Build all custom service images ──────────────────
+        // ── Build both custom service images using the bound .env file ──
         stage('Build Images') {
             steps {
-
                 withCredentials([file(credentialsId: 'renteaselanka_credentials', variable: 'ENV_FILE_PATH')]) {
-                    bat '''
-                docker compose --env-file "%ENV_FILE_PATH%" build
-            '''
+                    bat 'docker compose --env-file "%ENV_FILE_PATH%" build'
                 }
-
-
-                // echo "Building all services..."
-                // bat "docker-compose build"
             }
         }
 
-        // ── Tag each image with build number ─────────────────
+        // ── Tag images with the Jenkins build number ────────────────────
         stage('Tag Images') {
             steps {
-                bat "docker tag ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}"
+                bat """
+                    docker tag ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}
+                    docker tag ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}
+                """
             }
         }
 
-        // ── Push to Docker Hub ────────────────────────────────
+        // ── Push tagged and latest images to Docker Hub ─────────────────
         stage('Push to Docker Hub') {
-
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-credentials',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    // Pipe the token directly into stdin
-                    bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
-                    // Push backend
-                    bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}"
-                    bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest"
-
-                    // // Push frontend
-                    // bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}"
-                    // bat "docker push ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest"
-
-                  
-                    bat 'docker logout'
+                    bat '''
+                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
+                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}" + '''
+                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest" + '''
+                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}" + '''
+                        docker push ''' + "${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest" + '''
+                        docker logout
+                    '''
                 }
             }
         }
 
-        // ── Cleanup local images ──────────────────────────────
+        // ── Cleanup build-tagged images to save disk space ──────────────
         stage('Cleanup') {
             steps {
-                bat "docker-compose down --rmi local || exit 0"
-                bat "docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG} || exit 0"
-                // bat "docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG} || exit 0"
-               
+                bat """
+                    docker compose down --rmi local || exit 0
+                    docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG} || exit 0
+                    docker rmi ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG} || exit 0
+                """
             }
         }
     }
@@ -78,10 +69,11 @@ pipeline {
     post {
         success {
             echo """
-            ✅ All images pushed successfully
-            Backend:  ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:latest
-            // Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:latest
-          
+            =======================================================
+            ✅ All images built, tagged, and pushed successfully!
+            Backend:  ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}
+            Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}
+            =======================================================
             """
         }
         failure {
