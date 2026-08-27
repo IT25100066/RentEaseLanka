@@ -84,7 +84,7 @@ pipeline {
                     //   1. Convert CRLF -> LF  (Jenkins writes CRLF; OpenSSH needs LF only)
                     //   2. Strip BUILTIN\Users ACE (OpenSSH rejects world-readable keys)
                     bat '''
-                        powershell -Command "& { $p = $env:SSH_KEY_FILE; $bytes = [System.IO.File]::ReadAllBytes($p); $text = [System.Text.Encoding]::UTF8.GetString($bytes) -replace \"`r`n\", \"`n\"; [System.IO.File]::WriteAllText($p, $text, [System.Text.Encoding]::UTF8); $acl = Get-Acl $p; $acl.SetAccessRuleProtection($true, $false); $id = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($id, 'Read', 'Allow'); $acl.AddAccessRule($rule); Set-Acl $p $acl; Write-Host ('SSH key fixed (LF + perms) for: ' + $id) }"
+                        powershell -Command "& { $p = $env:SSH_KEY_FILE; $bytes = [System.IO.File]::ReadAllBytes($p); $text = [System.Text.Encoding]::UTF8.GetString($bytes).Replace([string][char]13+[char]10, [string][char]10); [System.IO.File]::WriteAllText($p, $text, [System.Text.Encoding]::UTF8); $acl = Get-Acl $p; $acl.SetAccessRuleProtection($true, $false); $id = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($id, 'Read', 'Allow'); $acl.AddAccessRule($rule); Set-Acl $p $acl; Write-Host ('SSH key fixed (LF + perms) for: ' + $id) }"
                     '''
 
                     // Step 1: Write the bash deploy script to a local file.
