@@ -101,7 +101,7 @@ DOCKER_USER="%DOCKER_USER%"
 DOCKER_PASS="%DOCKER_PASS%"
 
 echo "======================================================"
-echo " RentEaseLanka Deploy  —  Build #${BUILD_NUMBER}"
+echo " RentEaseLanka Deploy - Build #${BUILD_NUMBER}"
 echo "======================================================"
 
 # ── Verify prerequisites are installed ───────────────────────────────
