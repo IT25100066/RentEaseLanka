@@ -13,7 +13,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
-                echo "Branch: ${env.BRANCH_NAME} | Build: #${BUILD_NUMBER}"
+                echo "Build: #${BUILD_NUMBER} | Branch: ${env.GIT_BRANCH ?: env.BRANCH_NAME ?: 'unknown'}"
             }
         }
 
@@ -171,18 +171,13 @@ ENDSSH
 
     post {
         success {
-            script {
-                def deployMsg = (env.BRANCH_NAME == env.DEPLOY_BRANCH)
-                    ? "\n            🌐 Deployed to:  https://\${DO_DOMAIN:-<your-domain>}"
-                    : "\n            ⏭️  Deploy skipped (not on ${DEPLOY_BRANCH} branch)"
-                echo """
+            echo """
             =======================================================
             ✅ Pipeline completed successfully!
             Backend:  ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}
-            Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}${deployMsg}
+            Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}
             =======================================================
             """
-            }
         }
         failure {
             echo "❌ Pipeline failed on branch ${env.BRANCH_NAME}"
