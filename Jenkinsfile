@@ -54,9 +54,7 @@ pipeline {
         }
 
         stage('Deploy to DigitalOcean') {
-            when {
-                branch "${DEPLOY_BRANCH}"
-            }
+            
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: 'do-ssh-key', keyFileVariable: 'SSH_KEY', usernameVariable: 'SSH_USER'),
