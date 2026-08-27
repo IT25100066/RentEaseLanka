@@ -80,6 +80,9 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
+                    // Fix SSH key permissions on Windows -- OpenSSH refuses keys readable by BUILTIN\Users
+                    bat 'icacls "%SSH_KEY_FILE%" /inheritance:r /grant:r "%USERNAME%:R"'
+
                     // Step 1: Write the bash deploy script to a local file.
                     // Groovy interpolates: env.REMOTE_DIR, env.DO_DOMAIN, env.CERTBOT_EMAIL, BUILD_NUMBER.
                     // Shell variables use \$ so they are expanded at runtime on the droplet.
