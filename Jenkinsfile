@@ -81,11 +81,25 @@ pipeline {
                     )
                 ]) {
                     // Fix the SSH key temp file on Windows:
-                    //   1. Convert CRLF -> LF  (Jenkins writes CRLF; OpenSSH needs LF only)
-                    //   2. Strip BUILTIN\Users ACE (OpenSSH rejects world-readable keys)
-                    bat '''
-                        powershell -Command "& { $p = $env:SSH_KEY_FILE; $bytes = [System.IO.File]::ReadAllBytes($p); $text = [System.Text.Encoding]::UTF8.GetString($bytes).Replace([string][char]13+[char]10, [string][char]10); [System.IO.File]::WriteAllText($p, $text, [System.Text.Encoding]::UTF8); $acl = Get-Acl $p; $acl.SetAccessRuleProtection($true, $false); $id = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($id, 'Read', 'Allow'); $acl.AddAccessRule($rule); Set-Acl $p $acl; Write-Host ('SSH key fixed (LF + perms) for: ' + $id) }"
+                    // 1. Convert CRLF -> LF (OpenSSH needs Unix line endings)
+                    // 2. Remove UTF-8 BOM (PowerShell/NET adds a BOM which breaks OpenSSH)
+                    // 3. Strip BUILTIN\Users permissions
+                    writeFile file: 'fix_ssh_key.ps1', text: '''
+                        $p = $env:SSH_KEY_FILE
+                        $text = [System.IO.File]::ReadAllText($p)
+                        $text = $text.Replace("`r`n", "`n")
+                        $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+                        [System.IO.File]::WriteAllText($p, $text, $utf8NoBom)
+                        
+                        $acl = Get-Acl $p
+                        $acl.SetAccessRuleProtection($true, $false)
+                        $id = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name
+                        $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($id, 'Read', 'Allow')
+                        $acl.AddAccessRule($rule)
+                        Set-Acl $p $acl
+                        Write-Host ("SSH key fixed (No BOM, LF, perms) for: " + $id)
                     '''
+                    bat 'powershell -ExecutionPolicy Bypass -File fix_ssh_key.ps1'
 
                     // Step 1: Write the bash deploy script to a local file.
                     // Groovy interpolates: env.REMOTE_DIR, env.DO_DOMAIN, env.CERTBOT_EMAIL, BUILD_NUMBER.
