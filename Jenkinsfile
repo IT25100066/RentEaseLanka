@@ -16,6 +16,8 @@ pipeline {
             steps {
                 checkout scm
                 echo "Build: #${BUILD_NUMBER} | Branch: ${env.BRANCH_NAME ?: 'unknown'}"
+                echo "DEBUG branch vars: BRANCH_NAME=[${env.BRANCH_NAME}] GIT_BRANCH=[${env.GIT_BRANCH}] CHANGE_BRANCH=[${env.CHANGE_BRANCH}]"
+                echo "DEBUG DEPLOY_BRANCH=[${env.DEPLOY_BRANCH}]"
             }
         }
 
@@ -60,9 +62,7 @@ pipeline {
 
         // ── Deploy to DigitalOcean (deploy branch only) ──────────────────
         stage('Deploy to DigitalOcean') {
-            when {
-                branch "${DEPLOY_BRANCH}"
-            }
+            
             steps {
                 withCredentials([
                     sshUserPrivateKey(
