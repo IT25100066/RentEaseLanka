@@ -80,8 +80,12 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    // Fix SSH key permissions on Windows -- OpenSSH refuses keys readable by BUILTIN\Users
-                    bat 'icacls "%SSH_KEY_FILE%" /inheritance:r /grant:r "%USERNAME%:R"'
+                    // Fix SSH key permissions on Windows.
+                    // %USERNAME% fails under service accounts, so we use PowerShell
+                    // to identify the real running identity and grant it exclusive read access.
+                    bat '''
+                        powershell -Command "& { $p = '%SSH_KEY_FILE%'; $acl = Get-Acl $p; $acl.SetAccessRuleProtection($true, $false); $id = [System.Security.Principal.WindowsIdentity]::GetCurrent().Name; $rule = New-Object System.Security.AccessControl.FileSystemAccessRule($id, 'Read', 'Allow'); $acl.AddAccessRule($rule); Set-Acl $p $acl; Write-Host ('SSH key permissions fixed for: ' + $id) }"
+                    '''
 
                     // Step 1: Write the bash deploy script to a local file.
                     // Groovy interpolates: env.REMOTE_DIR, env.DO_DOMAIN, env.CERTBOT_EMAIL, BUILD_NUMBER.
