@@ -4,20 +4,22 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = 'it25100066'
         APP_NAME           = 'renteaselanka'
-        IMAGE_TAG          = '${BUILD_NUMBER}'
+        IMAGE_TAG          = "${BUILD_NUMBER}"
         DEPLOY_BRANCH      = 'Ferature_Fleet_management'
         REMOTE_DIR         = '/opt/renteaselanka'
     }
 
     stages {
+
+        // ── Checkout ────────────────────────────────────────────────────
         stage('Checkout') {
             steps {
                 checkout scm
-                echo "Build: #${BUILD_NUMBER} | Branch: ${env.GIT_BRANCH ?: env.BRANCH_NAME ?: 'unknown'}"
+                echo "Build: #${BUILD_NUMBER} | Branch: ${env.BRANCH_NAME ?: 'unknown'}"
             }
         }
 
-        // ── Build both custom service images using the bound .env file ──
+        // ── Build Images ─────────────────────────────────────────────────
         stage('Build Images') {
             steps {
                 withCredentials([file(credentialsId: 'renteaselanka_credentials', variable: 'ENV_FILE_PATH')]) {
@@ -26,7 +28,7 @@ pipeline {
             }
         }
 
-        // ── Tag images with the Jenkins build number ────────────────────
+        // ── Tag Images ───────────────────────────────────────────────────
         stage('Tag Images') {
             steps {
                 bat """
@@ -36,7 +38,7 @@ pipeline {
             }
         }
 
-        // ── Push tagged and latest images to Docker Hub ─────────────────
+        // ── Push to Docker Hub ───────────────────────────────────────────
         stage('Push to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
@@ -45,18 +47,18 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     bat '''
-                echo %DOCKER_PASS%| docker login -u %DOCKER_USER% --password-stdin
-                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-backend:%IMAGE_TAG%
-                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-backend:latest
-                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-frontend:%IMAGE_TAG%
-                docker push %DOCKERHUB_USERNAME%/%APP_NAME%-frontend:latest
-                docker logout
-            '''
+                        echo %DOCKER_PASS%| docker login -u %DOCKER_USER% --password-stdin
+                        docker push %DOCKERHUB_USERNAME%/%APP_NAME%-backend:%IMAGE_TAG%
+                        docker push %DOCKERHUB_USERNAME%/%APP_NAME%-backend:latest
+                        docker push %DOCKERHUB_USERNAME%/%APP_NAME%-frontend:%IMAGE_TAG%
+                        docker push %DOCKERHUB_USERNAME%/%APP_NAME%-frontend:latest
+                        docker logout
+                    '''
                 }
             }
         }
 
-        // ── Deploy to DigitalOcean (only on the deploy branch) ──────────
+        // ── Deploy to DigitalOcean (deploy branch only) ──────────────────
         stage('Deploy to DigitalOcean') {
             when {
                 branch "${DEPLOY_BRANCH}"
@@ -64,9 +66,9 @@ pipeline {
             steps {
                 withCredentials([
                     sshUserPrivateKey(
-                        credentialsId : 'do-ssh-key',
-                        keyFileVariable: 'SSH_KEY_FILE',
-                        usernameVariable: 'SSH_USER'
+                        credentialsId    : 'do-ssh-key',
+                        keyFileVariable  : 'SSH_KEY_FILE',
+                        usernameVariable : 'SSH_USER'
                     ),
                     string(credentialsId: 'do-droplet-host',  variable: 'DO_HOST'),
                     string(credentialsId: 'do-domain',        variable: 'DO_DOMAIN'),
@@ -78,55 +80,42 @@ pipeline {
                         passwordVariable: 'DOCKER_PASS'
                     )
                 ]) {
-                    // ── 1. Upload deployment files to the droplet ──────────
-                    bat """
-                        scp -o StrictHostKeyChecking=no -i "%SSH_KEY_FILE%" ^
-                            "%PROD_ENV_FILE%" ^
-                            docker-compose.yml ^
-                            nginx/renteaselanka.conf ^
-                            %SSH_USER%@%DO_HOST%:/tmp/
-                    """
-
-                    // ── 2. Run remote bootstrap + deploy script ────────────
-                    bat """
-                        ssh -o StrictHostKeyChecking=no -i "%SSH_KEY_FILE%" ^
-                            %SSH_USER%@%DO_HOST% "bash -s" << 'ENDSSH'
-
+                    // Step 1: Write the bash deploy script to a local file.
+                    // Groovy interpolates: env.REMOTE_DIR, env.DO_DOMAIN, env.CERTBOT_EMAIL, BUILD_NUMBER.
+                    // Shell variables use \$ so they are expanded at runtime on the droplet.
+                    writeFile file: 'deploy.sh', text: """#!/bin/bash
 set -e
 
-REMOTE_DIR="${REMOTE_DIR}"
-DOMAIN="%DO_DOMAIN%"
-EMAIL="%CERTBOT_EMAIL%"
-DOCKER_USER="%DOCKER_USER%"
-DOCKER_PASS="%DOCKER_PASS%"
+REMOTE_DIR="${env.REMOTE_DIR}"
+DOMAIN="${env.DO_DOMAIN}"
+EMAIL="${env.CERTBOT_EMAIL}"
 
 echo "======================================================"
 echo " RentEaseLanka Deploy - Build ${BUILD_NUMBER}"
 echo "======================================================"
 
-# ── Verify prerequisites are installed ───────────────────────────────
-echo "[Pre-check] Verifying Docker, Nginx, and Certbot are installed..."
-command -v docker  &> /dev/null || { echo "ERROR: Docker is not installed on the droplet. Please install it manually.";  exit 1; }
-command -v nginx   &> /dev/null || { echo "ERROR: Nginx is not installed on the droplet. Please install it manually.";   exit 1; }
-command -v certbot &> /dev/null || { echo "ERROR: Certbot is not installed on the droplet. Please install it manually."; exit 1; }
+# Pre-check: verify prerequisites are manually installed
+echo "[Pre-check] Verifying Docker, Nginx, and Certbot..."
+command -v docker  > /dev/null 2>&1 || { echo "ERROR: Docker not installed. Please install manually.";  exit 1; }
+command -v nginx   > /dev/null 2>&1 || { echo "ERROR: Nginx not installed. Please install manually.";   exit 1; }
+command -v certbot > /dev/null 2>&1 || { echo "ERROR: Certbot not installed. Please install manually."; exit 1; }
 echo "[Pre-check] All prerequisites found."
 
-# ── Prepare remote directory & move uploaded files ──────────────────
+# [1/4] Prepare deployment directory
 echo "[1/4] Preparing deployment directory: \$REMOTE_DIR"
 mkdir -p "\$REMOTE_DIR"
-cp /tmp/.env*              "\$REMOTE_DIR/.env"             2>/dev/null || cp /tmp/$(basename %PROD_ENV_FILE%) "\$REMOTE_DIR/.env"
+cp /tmp/prod.env           "\$REMOTE_DIR/.env"
 cp /tmp/docker-compose.yml "\$REMOTE_DIR/docker-compose.yml"
 
-# ── Deploy Nginx config ──────────────────────────────────────────────
-echo "[2/4] Deploying Nginx config for \$DOMAIN ..."
-sed "s/DOMAIN_PLACEHOLDER/\$DOMAIN/g" /tmp/renteaselanka.conf \
-    > /etc/nginx/sites-available/renteaselanka
+# [2/4] Deploy Nginx config
+echo "[2/4] Deploying Nginx config for \$DOMAIN..."
+sed "s/DOMAIN_PLACEHOLDER/\$DOMAIN/g" /tmp/renteaselanka.conf > /etc/nginx/sites-available/renteaselanka
 ln -sf /etc/nginx/sites-available/renteaselanka /etc/nginx/sites-enabled/renteaselanka
 rm -f /etc/nginx/sites-enabled/default
 nginx -t
 
-# ── Pull latest images & restart Docker Compose stack ───────────────
-echo "[3/4] Pulling images and restarting Docker Compose stack..."
+# [3/4] Pull images and restart Docker Compose stack
+echo "[3/4] Pulling images and restarting stack..."
 echo "\$DOCKER_PASS" | docker login -u "\$DOCKER_USER" --password-stdin
 cd "\$REMOTE_DIR"
 docker compose pull
@@ -134,30 +123,39 @@ docker compose up -d --remove-orphans
 docker logout
 echo "[3/4] Stack is up."
 
-# ── Obtain / renew SSL certificate with Certbot ──────────────────────
+# [4/4] Obtain or renew SSL certificate via Certbot
 echo "[4/4] Running Certbot for HTTPS..."
-certbot --nginx \
-    --non-interactive \
-    --agree-tos \
-    --redirect \
-    --email "\$EMAIL" \
-    -d "\$DOMAIN" \
-    -d "www.\$DOMAIN" || echo "[4/4] Certbot skipped (cert may already be valid)."
+certbot --nginx --non-interactive --agree-tos --redirect --email "\$EMAIL" -d "\$DOMAIN" -d "www.\$DOMAIN" || echo "[4/4] Certbot skipped (cert already valid)."
 
-# ── Final Nginx reload ───────────────────────────────────────────────
+# Final Nginx reload
 nginx -t && systemctl reload nginx
 
 echo "======================================================"
-echo " Deploy complete!  https://\$DOMAIN"
+echo " Deploy complete! https://\$DOMAIN"
 echo "======================================================"
+"""
 
-ENDSSH
+                    // Step 2: Upload deploy.sh + env file + compose + nginx config
+                    bat """
+                        scp -o StrictHostKeyChecking=no -i "%SSH_KEY_FILE%" ^
+                            deploy.sh ^
+                            "%PROD_ENV_FILE%" ^
+                            docker-compose.yml ^
+                            nginx/renteaselanka.conf ^
+                            %SSH_USER%@%DO_HOST%:/tmp/
+                    """
+
+                    // Step 3: Rename env file to prod.env, then run deploy.sh
+                    bat """
+                        ssh -o StrictHostKeyChecking=no -i "%SSH_KEY_FILE%" ^
+                            %SSH_USER%@%DO_HOST% ^
+                            "mv /tmp/*env* /tmp/prod.env 2>/dev/null; chmod +x /tmp/deploy.sh && DOCKER_USER=%DOCKER_USER% DOCKER_PASS=%DOCKER_PASS% bash /tmp/deploy.sh"
                     """
                 }
             }
         }
 
-        // ── Cleanup build-tagged images to save disk space ──────────────
+        // ── Cleanup local build artifacts ────────────────────────────────
         stage('Cleanup') {
             steps {
                 bat """
@@ -173,14 +171,14 @@ ENDSSH
         success {
             echo """
             =======================================================
-            ✅ Pipeline completed successfully!
+            Pipeline completed successfully!
             Backend:  ${DOCKERHUB_USERNAME}/${APP_NAME}-backend:${IMAGE_TAG}
             Frontend: ${DOCKERHUB_USERNAME}/${APP_NAME}-frontend:${IMAGE_TAG}
             =======================================================
             """
         }
         failure {
-            echo "❌ Pipeline failed on branch ${env.BRANCH_NAME}"
+            echo "Pipeline failed on branch ${env.BRANCH_NAME}"
         }
         always {
             cleanWs()
