@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = 'it25100066'
         APP_NAME           = 'renteaselanka'
-        IMAGE_TAG          = "${BUILD_NUMBER}"
+        IMAGE_TAG          = '${BUILD_NUMBER}'
         DEPLOY_BRANCH      = 'Ferature_Fleet_management'
         REMOTE_DIR         = '/opt/renteaselanka'
     }
