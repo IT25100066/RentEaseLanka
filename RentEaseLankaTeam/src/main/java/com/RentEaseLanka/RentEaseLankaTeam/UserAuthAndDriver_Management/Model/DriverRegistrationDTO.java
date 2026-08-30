@@ -10,6 +10,7 @@ public class DriverRegistrationDTO {
     private LocalDate licenseExpiryDate;
     private Integer experienceYears;
     private BigDecimal dailyRate;
+    private String nicNumber;
 
     public DriverRegistrationDTO() {}
 
@@ -30,4 +31,7 @@ public class DriverRegistrationDTO {
 
     public BigDecimal getDailyRate() { return dailyRate; }
     public void setDailyRate(BigDecimal dailyRate) { this.dailyRate = dailyRate; }
+
+    public String getNicNumber() { return nicNumber; }
+    public void setNicNumber(String nicNumber) { this.nicNumber = nicNumber; }
 }

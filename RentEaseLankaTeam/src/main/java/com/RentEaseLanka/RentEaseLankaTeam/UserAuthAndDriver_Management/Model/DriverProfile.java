@@ -30,6 +30,8 @@ public class DriverProfile {
 
     private BigDecimal dailyRate;
 
+    private String nicNumber;
+
     public DriverProfile() {}
 
     public Long getId() { return id; }
@@ -55,4 +57,7 @@ public class DriverProfile {
 
     public BigDecimal getDailyRate() { return dailyRate; }
     public void setDailyRate(BigDecimal dailyRate) { this.dailyRate = dailyRate; }
+
+    public String getNicNumber() { return nicNumber; }
+    public void setNicNumber(String nicNumber) { this.nicNumber = nicNumber; }
 }
