@@ -72,6 +72,9 @@ public class Vehicle {
     private List<VehicleImage> images = new ArrayList<>();
 
     private VehicleState resolveState(VehicleStatus status) {
+        if (status == null) {
+            return new PendingState();
+        }
         return switch (status) {
             case AVAILABLE      -> new AvailableState();
             case RESERVED       -> new ReservedState();

@@ -11,11 +11,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-@Mapper(componentModel="spring")
+@Mapper(componentModel = "spring")
 public interface VehicleMapper {
 
     @Mapping(source = "category.id", target = "categoryId")
     @Mapping(source = "category.name", target = "categoryName")
+    @Mapping(source = "category.description", target = "categoryDescription")
     @Mapping(source = "images", target = "imageUrls", qualifiedByName = "mapImagesToUrls")
     VehicleResponseDTO toDto(Vehicle vehicle);
 

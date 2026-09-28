@@ -1,32 +1,31 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service;
 
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.*;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
 public interface FleetService {
 
-     void createVehicleWithImages(VehicleCreateRequestDTO vehicleCreateRequest);
+  void createVehicleWithImages(VehicleCreateRequestDTO vehicleCreateRequest);
 
-     List<VehicleResponseDTO> getAllVehicles();
+  List<VehicleResponseDTO> getAllVehicles();
 
-     VehicleResponseDTO getVehicleById(Long id);
+  VehicleResponseDTO getVehicleById(Long id);
 
-     boolean updateVehicle(UpdateVehicleRequestDTO dto);
+  boolean updateVehicle(UpdateVehicleRequestDTO dto);
 
-     boolean updateOdometer(UpdateOdometerDTO dto);
+  boolean updateOdometer(UpdateOdometerDTO dto);
 
-      boolean makeAvailable(List<Long> vehicleIdList);
+  boolean makeAvailable(List<Long> vehicleIdList);
 
-      List<VehicleResponseDTO> pendingVehicles();
+  List<VehicleResponseDTO> pendingVehicles();
 
-    List<VehicleResponseDTO> getVehiclesByFilter(String filterType, @Nullable String category, @Nullable String status);
+  List<VehicleResponseDTO> getVehiclesByFilter(String filterType, @Nullable String category, @Nullable String status);
 
-    boolean setVehicleToOutOfService(Long id);
+  boolean setVehicleToOutOfService(Long id);
 
-    VehicleRemoveResponseDTO removePendingVehicles(Long id);
+  VehicleRemoveResponseDTO removePendingVehicles(Long id);
 
-    boolean deleteVehicle(Long id);
+  boolean deleteVehicle(Long id);
 }

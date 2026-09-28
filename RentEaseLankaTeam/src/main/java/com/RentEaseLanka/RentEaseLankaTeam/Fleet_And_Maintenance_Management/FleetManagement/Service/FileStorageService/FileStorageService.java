@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Service
+@Service("fleetFileStorageService")
 public class FileStorageService {
     private final Path rootLocation = Paths.get("uploads/vehicles");
 
@@ -22,8 +22,7 @@ public class FileStorageService {
     public void init() {
         try {
             Files.createDirectories(rootLocation);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Init failed");
         }
     }
@@ -37,9 +36,10 @@ public class FileStorageService {
         }
         List<String> storedPaths = new ArrayList<>();
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
+            if (file.isEmpty())
+                continue;
             String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
-            String newFileName = UUID.randomUUID().toString()+"." + ext;
+            String newFileName = UUID.randomUUID().toString() + "." + ext;
             try {
                 Files.copy(file.getInputStream(), vehicleDir.resolve(newFileName));
                 storedPaths.add("/uploads/vehicles/vehicle_" + vehicleId + "/" +

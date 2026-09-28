@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,14 +20,14 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*")
 @RequiredArgsConstructor
 public class FleetController {
 
     @Autowired
     private FleetService fleetService;
 
-    @RequestMapping(value = "/vehicle/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = "/vehicle/create", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('MANAGER')")
     public ResponseEntity<String> addVehicle(@Valid @ModelAttribute VehicleCreateRequestDTO newVehicle) {
 
         try {
@@ -53,6 +54,7 @@ public class FleetController {
             List<VehicleResponseDTO> vehicles = fleetService.getAllVehicles();
             return new ResponseEntity<>(vehicles, HttpStatus.OK);
         } catch (Exception e) {
+            log.error("Failed to get all vehicles: ", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -93,14 +95,15 @@ public class FleetController {
         }
     }
 
-    @PostMapping("/vehicle/makeAvailable")
-    public ResponseEntity<String> makeVehicleAvailable(@RequestBody List<Long> ids) {
+    @PostMapping("/manager/vehicle/accept")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    public ResponseEntity<String> acceptPendingVehicles(@RequestBody List<Long> ids) {
         try {
-            log.info(ids.toString());
+            log.info("Manager accepting vehicles with IDs: {}", ids);
 
             boolean done = fleetService.makeAvailable(ids);
             if (done) {
-                return new ResponseEntity<>(HttpStatus.OK);
+                return new ResponseEntity<>("Vehicles accepted successfully", HttpStatus.OK);
             }
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 
@@ -126,6 +129,7 @@ public class FleetController {
     }
 
     @DeleteMapping("/vehicle/{id}/remove")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<?> setVehicleToOutOfService(@PathVariable Long id) {
         try {
             boolean outOfService = fleetService.setVehicleToOutOfService(id);
@@ -139,6 +143,7 @@ public class FleetController {
     }
 
     @DeleteMapping("/vehicle/{id}/delete")
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
     public ResponseEntity<?> deleteVehicle(@PathVariable Long id) {
         try {
             boolean deleted = fleetService.deleteVehicle(id);

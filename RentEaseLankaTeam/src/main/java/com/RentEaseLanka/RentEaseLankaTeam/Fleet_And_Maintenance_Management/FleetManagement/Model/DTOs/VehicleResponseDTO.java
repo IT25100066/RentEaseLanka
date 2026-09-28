@@ -26,6 +26,7 @@ public class VehicleResponseDTO {
     // Category info (flattened to avoid circular references)
     private Long categoryId;
     private String categoryName;
+    private String categoryDescription;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

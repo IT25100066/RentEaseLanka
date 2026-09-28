@@ -5,7 +5,7 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ReservedState implements VehicleState{
+public class ReservedState implements VehicleState {
     @Override
     public void reserve(Vehicle vehicle) {
         throw new IllegalStateException("Validation Error: Vehicle is already reserved by a customer.");
@@ -25,7 +25,8 @@ public class ReservedState implements VehicleState{
 
     @Override
     public void scheduleMaintenance(Vehicle vehicle) {
-        throw new IllegalStateException("Validation Error: Cannot schedule maintenance for a reserved vehicle. Cancel reservation first.");
+        throw new IllegalStateException(
+                "Validation Error: Cannot schedule maintenance for a reserved vehicle. Cancel reservation first.");
     }
 
     @Override

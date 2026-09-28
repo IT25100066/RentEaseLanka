@@ -10,10 +10,11 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleImageRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Service.FileStorageService.FileStorageService;
+
+import io.micrometer.common.lang.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -95,11 +96,11 @@ public class FleetServiceImpl implements FleetService {
     }
 
     @Override
-//    @Cacheable(value = "Vehicles", key = "'allVehicles'")
+    @Cacheable(value = "Vehicles", key = "'allVehicles'")
     public List<VehicleResponseDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
         for (Vehicle v : vehicleRepository.findAll()) {
-            if (!v.getStatus().equals(VehicleStatus.OUT_OF_SERVICE)) {
+            if (v.getStatus() != VehicleStatus.OUT_OF_SERVICE) {
                 vehicles.add(v);
             }
         }
@@ -148,6 +149,7 @@ public class FleetServiceImpl implements FleetService {
             Vehicle vehicle = vehicleRepository.findById(dto.getId()).orElseThrow();
             vehicle.setCurrentOdometer(dto.getCurrentOdometer());
             log.info("Odometer Updated Successfully");
+            vehicleRepository.save(vehicle);
             return true;
 
         } catch (RuntimeException e) {
@@ -287,8 +289,6 @@ public class FleetServiceImpl implements FleetService {
         return response;
     }
 
-
-
     @Override
     @Transactional
     @CacheEvict(value = "Vehicles", key = "'allVehicles'")
@@ -305,7 +305,7 @@ public class FleetServiceImpl implements FleetService {
         }
     }
 
-    public List<VehicleResponseDTO> getVehicles (){
+    public List<VehicleResponseDTO> getVehicles() {
         List<Vehicle> vehicles = vehicleRepository.findAll();
 
         List<VehicleResponseDTO> response = new ArrayList<>();
