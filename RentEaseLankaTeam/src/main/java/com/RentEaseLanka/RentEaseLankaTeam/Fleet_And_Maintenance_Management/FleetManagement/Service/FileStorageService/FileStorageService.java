@@ -2,6 +2,7 @@ package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Fle
 
 import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,18 +14,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@Service
+@Service("fleetFileStorageService")
 public class FileStorageService {
     private final Path rootLocation = Paths.get("uploads/vehicles");
+
     @PostConstruct
     public void init() {
         try {
             Files.createDirectories(rootLocation);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             throw new RuntimeException("Init failed");
         }
     }
+
     public List<String> storeFiles(Long vehicleId, List<MultipartFile> files) {
         Path vehicleDir = this.rootLocation.resolve("vehicle_" + vehicleId);
         try {
@@ -34,9 +36,10 @@ public class FileStorageService {
         }
         List<String> storedPaths = new ArrayList<>();
         for (MultipartFile file : files) {
-            if (file.isEmpty()) continue;
+            if (file.isEmpty())
+                continue;
             String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
-            String newFileName = UUID.randomUUID().toString()+"." + ext;
+            String newFileName = UUID.randomUUID().toString() + "." + ext;
             try {
                 Files.copy(file.getInputStream(), vehicleDir.resolve(newFileName));
                 storedPaths.add("/uploads/vehicles/vehicle_" + vehicleId + "/" +
@@ -48,5 +51,13 @@ public class FileStorageService {
         return storedPaths;
     }
 
+    public boolean deleteVehicleFiles(Long vehicleId) {
+        Path vehicleDir = this.rootLocation.resolve("vehicle_" + vehicleId);
+        try {
+            return FileSystemUtils.deleteRecursively(vehicleDir);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to delete vehicle directory", e);
+        }
+    }
 
 }

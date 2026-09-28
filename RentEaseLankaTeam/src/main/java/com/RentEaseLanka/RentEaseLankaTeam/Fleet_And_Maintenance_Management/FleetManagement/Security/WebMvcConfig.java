@@ -10,7 +10,8 @@ import java.nio.file.Paths;
 /**
  * Configures Spring MVC to serve uploaded vehicle images as static resources.
  * Maps the URL pattern /uploads/** to the physical uploads/ directory on disk,
- * so the frontend can load images using the paths stored in VehicleImage.filePath.
+ * so the frontend can load images using the paths stored in
+ * VehicleImage.filePath.
  */
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {

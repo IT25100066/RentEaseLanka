@@ -5,7 +5,7 @@ import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Flee
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class RentedState implements VehicleState{
+public class RentedState implements VehicleState {
     @Override
     public void reserve(Vehicle vehicle) {
         throw new IllegalStateException("Validation Error: Cannot reserve a vehicle that is currently rented out.");
@@ -19,17 +19,32 @@ public class RentedState implements VehicleState{
     @Override
     public void returnVehicle(Vehicle vehicle) {
         log.info("Vehicle returned by customer. Processing mileage and billing...");
-        // Transitions back to Available (or Maintenance depending on your business rules)
         vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
     }
 
     @Override
     public void scheduleMaintenance(Vehicle vehicle) {
-        throw new IllegalStateException("Validation Error: Cannot service a vehicle while it is in the customer's possession.");
+        throw new IllegalStateException(
+                "Validation Error: Cannot service a vehicle while it is in the customer's possession.");
     }
 
     @Override
     public void makeAvailable(Vehicle vehicle) {
-        throw new IllegalStateException("Validation Error: Vehicle must be returned through the proper workflow before it can be made available.");
+        throw new IllegalStateException(
+                "Validation Error: Vehicle must be returned through the proper workflow before it can be made available.");
+    }
+
+    @Override
+    public void outOfService(Vehicle vehicle) {
+        throw new IllegalStateException(
+                "Validation Error: Vehicle cannot set to out of service as it is in Rented state");
+
+    }
+
+    @Override
+    public void pendingState(Vehicle vehicle) {
+        throw new IllegalStateException(
+                "Validation Error: Vehicle cannot set to out of service as it is in Rented state");
+
     }
 }

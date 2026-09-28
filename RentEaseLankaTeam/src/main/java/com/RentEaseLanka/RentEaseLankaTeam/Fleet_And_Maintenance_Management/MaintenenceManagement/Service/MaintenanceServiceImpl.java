@@ -1,9 +1,6 @@
 package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Service;
 
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.VehicleStatus;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.AvailableState;
-import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.Vehicle_State.MaintenanceState;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Repository.VehicleRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model.DTO.MaintenanceCompleteDTO;
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.MaintenenceManagement.Model.DTO.MaintenanceRecordDTO;
@@ -48,9 +45,10 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             }
             //checking weather the record is already recorded
             try{
-               List<MaintenanceRecord> duplicateRecords=  maintenanceRepository.findByVehicleAndOdometerAtService(vehicle, record.getOdometerAtService());
-                if (!duplicateRecords.isEmpty()){
-                    log.info("Maintenance record is already Recorded {}",duplicateRecords);
+               List<MaintenanceRecord> scheduledRecords=  maintenanceRepository.findByVehicleAndStatus(vehicle, MaintenanceStatus.IN_PROGRESS);
+
+                if ( !scheduledRecords.isEmpty()){
+                    log.info("A Maintenance is already scheduled {} , {}",scheduledRecords);
                     throw new RuntimeException("Maintenance Record already exists");
                 }
             } catch (Exception e) {
@@ -63,13 +61,13 @@ public class MaintenanceServiceImpl implements MaintenanceService{
 
             maintenanceRecord.setVehicle(vehicle);
             maintenanceRecord.setType(MaintenanceType.valueOf(record.getType().toUpperCase()));
-            maintenanceRecord.setStatus(MaintenanceStatus.SCHEDULED);
             maintenanceRecord.setDescription(record.getDescription());
             maintenanceRecord.setOdometerAtService(record.getOdometerAtService());
             maintenanceRecord.setScheduledDate(LocalDateTime.now());
+          
 
             //changing the relevant vehicle's vehicle status
-            vehicle.changeState(VehicleStatus.UNDER_MAINTENANCE, new MaintenanceState());
+            vehicle.scheduleMaintenance();
             vehicleRepository.save(vehicle);
             maintenanceRepository.save(maintenanceRecord);
 
@@ -115,19 +113,18 @@ public class MaintenanceServiceImpl implements MaintenanceService{
     //Change the maintenance status by MaintenanceId
     @Override
     @Transactional
-    public boolean updateStatus(Long id) {
+    public boolean startMaintenance(Long id) {
 
         MaintenanceRecord record = maintenanceRepository.findById(id).orElseThrow();
         Vehicle vehicle = record.getVehicle();
 
         if (record.getStatus().equals(MaintenanceStatus.COMPLETED) || record.getStatus().equals(MaintenanceStatus.CANCELLED)){
-            log.info("Maintenance Record Cannot be Updated (COMPLETED/CANCELLED)");
+            log.info("Maintenance Record Cannot be Updated (COMPLETED/CANCELLED) ");
             return false;
         }
 
-
         if(record.getStatus() == MaintenanceStatus.SCHEDULED){
-            record.setStatus(MaintenanceStatus.IN_PROGRESS);
+            record.inProgressMaintenance();
             log.info("Maintenance Record  Updated to "+MaintenanceStatus.IN_PROGRESS.name());
             maintenanceRepository.save(record);
             return true;
@@ -138,27 +135,27 @@ public class MaintenanceServiceImpl implements MaintenanceService{
 
     @Override
     @Transactional
-    public boolean updateStatus(Long id, MaintenanceCompleteDTO dto) {
+    public boolean completeMaintenance(Long id, MaintenanceCompleteDTO dto) {
 
         MaintenanceRecord record = maintenanceRepository.findById(id).orElseThrow();
 
-        if (record.getStatus().equals(MaintenanceStatus.IN_PROGRESS)){
+        try{
             Vehicle vehicle = vehicleRepository.findById(record.getVehicle().getId()).orElseThrow();
-            record.setStatus(MaintenanceStatus.COMPLETED);
+            record.completeMaintenance();
             record.setCost(dto.getCost());
             record.setCompletionDate(LocalDateTime.now());
-            vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
+            vehicle.makeAvailable();
 
             vehicleRepository.save(vehicle);
             log.info("Vehicle status updated successfully for Vehicle : {}", record.getVehicle().getLicensePlate());
             maintenanceRepository.save(record);
-            log.info("Maintenance Record Updated to "+VehicleStatus.AVAILABLE.name());
+            log.info("Maintenance Record Updated to COMPLETE");
             return true;
 
-        }else{
-            log.info("Maintenance Record  Cannot be Completed");
-            return false;
+        } catch (RuntimeException e) {
+            throw new RuntimeException("Vehicle is already Completed maintenance");
         }
+
     }
 
     @Override
@@ -169,22 +166,18 @@ public class MaintenanceServiceImpl implements MaintenanceService{
             log.info(record.getType().toString());
             Vehicle vehicle = record.getVehicle();
 
-            if (record.getStatus().name().equals(MaintenanceStatus.SCHEDULED.name())){
-                record.setStatus(MaintenanceStatus.CANCELLED);
-                vehicle.changeState(VehicleStatus.AVAILABLE, new AvailableState());
+                record.cancelMaintenance();
+                vehicle.makeAvailable();
                 vehicleRepository.save(vehicle);
-                log.info("Vehicle status updated successfully for Vehicle : {}", vehicle.getLicensePlate());
+                log.info("Maintenance Cancelled successfully for Vehicle : {}", vehicle.getLicensePlate());
                 maintenanceRepository.save(record);
                 return true;
-            }else{
-                log.info("Could not Cancel the Maintenance Record");
-                return false;
-            }
+
 
         }catch (Exception e){
             log.error(e.getMessage());
+            throw new RuntimeException(e.getMessage());
         }
-        return false;
 
     }
 

@@ -5,6 +5,4 @@ public enum MaintenanceStatus {
     IN_PROGRESS,
     COMPLETED,
     CANCELLED;
-
-
 }
