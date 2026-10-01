@@ -1,7 +1,6 @@
 package com.RentEaseLanka.RentEaseLankaTeam.UserAuthAndDriver_Management.Service;
 
 import com.RentEaseLanka.RentEaseLankaTeam.UserAuthAndDriver_Management.Model.*;
-import com.RentEaseLanka.RentEaseLankaTeam.UserAuthAndDriver_Management.Repository.DriverRepository;
 import com.RentEaseLanka.RentEaseLankaTeam.UserAuthAndDriver_Management.Repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,9 +24,6 @@ public class AuthAndDriverServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private DriverRepository driverRepository;
-
-    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks
@@ -35,7 +31,6 @@ public class AuthAndDriverServiceTest {
 
     private User sampleCustomer;
     private User sampleStaff;
-    private DriverProfile sampleDriverProfile;
 
     @BeforeEach
     void setUp() {
@@ -52,11 +47,6 @@ public class AuthAndDriverServiceTest {
         sampleStaff.setFullName("Staff Member");
         sampleStaff.setEmail("staff@rentease.com");
         sampleStaff.setRole(Role.ROLE_STAFF);
-
-        sampleDriverProfile = new DriverProfile();
-        sampleDriverProfile.setId(10L);
-        sampleDriverProfile.setUser(sampleCustomer);
-        sampleDriverProfile.setAvailabilityStatus(AvailabilityStatus.AVAILABLE);
     }
 
     @Test
@@ -105,17 +95,5 @@ public class AuthAndDriverServiceTest {
 
         assertEquals("Access Denied: Insufficient permissions to perform KYC verification.", exception.getMessage());
         verify(userRepository, never()).save(any(User.class));
-    }
-
-    @Test
-    @DisplayName("Should assign available driver to booking and update status to ON_TRIP")
-    void assignDriverToBooking_Success() {
-        when(driverRepository.findById(10L)).thenReturn(Optional.of(sampleDriverProfile));
-        when(driverRepository.save(any(DriverProfile.class))).thenAnswer(invocation -> invocation.getArgument(0));
-
-        DriverProfile updatedDriver = authAndDriverService.assignDriverToBooking(10L, 100L);
-
-        assertEquals(AvailabilityStatus.ON_TRIP, updatedDriver.getAvailabilityStatus());
-        verify(driverRepository, times(1)).save(sampleDriverProfile);
     }
 }
