@@ -1,0 +1,20 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-area {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+}
+
+.main-content {
+  margin-top: var(--topbar-height);
+  min-height: calc(100vh - var(--topbar-height));
+}
+
+@media (max-width: 768px) {
+  .main-area {
+    margin-left: 0;
+  }
+}
