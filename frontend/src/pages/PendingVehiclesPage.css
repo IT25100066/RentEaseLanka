@@ -1,45 +1,10 @@
-.pending-actions {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-}
-
+/* Row selected highlight (used when bulk-selecting vehicles) */
 .row-selected {
   background: var(--primary-50) !important;
 }
 
 .row-selected td {
   border-bottom-color: var(--primary-100) !important;
-}
-
-/* Reuse dashboard styles */
-.table-vehicle-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.table-vehicle-thumb {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-sm);
-  overflow: hidden;
-  background: var(--slate-100);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.table-vehicle-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.table-vehicle-model {
-  font-weight: 600;
-  font-size: 0.88rem;
 }
 
 input[type='checkbox'] {

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import API, { BASE_URL } from '../api/axiosInstance';
 import {
   HiOutlineArrowLeft,
@@ -10,16 +11,118 @@ import {
   HiOutlineSupport,
   HiOutlineStar,
   HiOutlineCheckCircle,
+  HiOutlineExclamationCircle,
 } from 'react-icons/hi';
+import { toast } from 'react-toastify';
 import './CustomerVehicleDetail.css';
-
 
 export default function CustomerVehicleDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, user, role } = useAuth();
   const [vehicle, setVehicle] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeImage, setActiveImage] = useState(0);
+
+  // Booking Form State
+  const [showBookingForm, setShowBookingForm] = useState(false);
+  const [pickupDate, setPickupDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
+  const [pickupLocation, setPickupLocation] = useState('');
+  const [returnLocation, setReturnLocation] = useState('');
+  const [withDriver, setWithDriver] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [calculatingPrice, setCalculatingPrice] = useState(false);
+
+  const handleCalculatePrice = async () => {
+    if (!pickupDate || !returnDate || !vehicle?.id) {
+      toast.error('Please select pickup and return dates');
+      setTotalAmount(0);
+      return;
+    }
+    
+    const start = new Date(pickupDate);
+    const end = new Date(returnDate);
+    if (end <= start) {
+      toast.error('Return date must be after pickup date');
+      setTotalAmount(0);
+      return;
+    }
+    
+    setCalculatingPrice(true);
+    try {
+      const formattedPickup = pickupDate.length === 16 ? `${pickupDate}:00` : pickupDate;
+      const formattedReturn = returnDate.length === 16 ? `${returnDate}:00` : returnDate;
+      
+      const payload = {
+        vehicleId: vehicle.id,
+        pickupDateTime: formattedPickup,
+        returnDateTime: formattedReturn,
+        withDriver: withDriver
+      };
+      
+      const res = await API.post('/booking/calculate-price', payload);
+      setTotalAmount(res.data);
+    } catch (err) {
+      console.error("Error calculating price", err);
+      toast.error(err.response?.data || 'Failed to calculate price');
+      setTotalAmount(0);
+    } finally {
+      setCalculatingPrice(false);
+    }
+  };
+
+  const handleBookingSubmit = async (e) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      toast.info('Please sign in to complete your booking.');
+      navigate('/signin');
+      return;
+    }
+
+    if (!pickupDate || !returnDate || !pickupLocation || !returnLocation) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    if (totalAmount <= 0) {
+      toast.error('Invalid dates selected or price could not be calculated');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formattedPickup = pickupDate.length === 16 ? `${pickupDate}:00` : pickupDate;
+      const formattedReturn = returnDate.length === 16 ? `${returnDate}:00` : returnDate;
+
+      const payload = {
+        vehicleId: vehicle.id,
+        pickupDateTime: formattedPickup,
+        returnDateTime: formattedReturn,
+        pickupLocation,
+        returnLocation,
+        totalAmount,
+        withDriver
+      };
+
+      await API.post('/booking/create', payload);
+      toast.success('Booking requested successfully!');
+      setShowBookingForm(false);
+      // Reset form
+      setPickupDate('');
+      setReturnDate('');
+      setPickupLocation('');
+      setReturnLocation('');
+      setWithDriver(false);
+      navigate('/my/bookings');
+    } catch (err) {
+      toast.error(err.response?.data || 'Failed to submit booking');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const fetchVehicle = async () => {
@@ -72,16 +175,19 @@ export default function CustomerVehicleDetail() {
             <div className="cdetail-main-image">
               {images.length > 0 ? (
                 <img
-                  src={`${BASE_URL}${images[activeImage]}`}
+                  src={`${BASE_URL}${images[activeImage].startsWith('/') ? '' : '/'}${images[activeImage]}`}
                   alt={vehicle.model}
                   id="cdetail-main-img"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                  }}
                 />
-              ) : (
-                <div className="cdetail-no-image">
-                  <span>🚗</span>
-                  <p>No images available</p>
-                </div>
-              )}
+              ) : null}
+              <div className="cdetail-no-image" style={{ display: images.length > 0 ? 'none' : 'flex' }}>
+                <span>🚗</span>
+                <p>No images available</p>
+              </div>
             </div>
             {images.length > 1 && (
               <div className="cdetail-thumbs">
@@ -91,7 +197,7 @@ export default function CustomerVehicleDetail() {
                     className={`cdetail-thumb ${idx === activeImage ? 'cdetail-thumb-active' : ''}`}
                     onClick={() => setActiveImage(idx)}
                   >
-                    <img src={`${BASE_URL}${url}`} alt={`View ${idx + 1}`} />
+                    <img src={`${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`} alt={`View ${idx + 1}`} />
                   </button>
                 ))}
               </div>
@@ -105,6 +211,7 @@ export default function CustomerVehicleDetail() {
             </div>
 
             <h1 className="cdetail-model">{vehicle.model}</h1>
+            <p className="cdetails-categoryDescription">{vehicle.categoryDescription}</p>
             <p className="cdetail-plate">
               <HiOutlineLocationMarker />
               {vehicle.licensePlate}
@@ -155,20 +262,135 @@ export default function CustomerVehicleDetail() {
               </div>
             </div>
 
-            {/* CTA */}
-            <div className="cdetail-cta">
-              <button className="cdetail-book-btn" id="book-vehicle-btn">
-                <HiOutlineCalendar />
-                Book This Vehicle
-              </button>
-              <button
-                className="cdetail-contact-btn"
-                id="contact-us-btn"
-              >
-                <HiOutlineSupport />
-                Contact Us
-              </button>
-            </div>
+            {/* CTA / Booking Form */}
+            {!showBookingForm ? (
+              <div className="cdetail-cta">
+                <button 
+                  className="cdetail-book-btn" 
+                  id="book-vehicle-btn"
+                  onClick={() => setShowBookingForm(true)}
+                  disabled={vehicle.status == 'OUT_OF_SERVICE'}
+                >
+                  <HiOutlineCalendar />
+                  {vehicle.status != 'OUT_OF_SERVICE' ? 'Book This Vehicle' : 'Currently Unavailable'}
+                </button>
+                <button
+                  className="cdetail-contact-btn"
+                  id="contact-us-btn"
+                >
+                  <HiOutlineSupport />
+                  Contact Us
+                </button>
+              </div>
+            ) : (
+              <div className="cdetail-booking-form">
+                <h3>Request Booking</h3>
+                {isAuthenticated && role === 'CUSTOMER' && user?.verificationStatus !== 'VERIFIED' && (
+                  <div style={{
+                    padding: '10px 14px',
+                    marginBottom: '14px',
+                    borderRadius: '8px',
+                    background: '#fffbeb',
+                    border: '1px solid #fef3c7',
+                    color: '#92400e',
+                    fontSize: '0.875rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}>
+                    <HiOutlineExclamationCircle style={{ fontSize: '1.2rem', flexShrink: 0 }} />
+                    <span>
+                      Your account is pending verification. Please <Link to="/my/nic-upload" style={{ fontWeight: 'bold', textDecoration: 'underline' }}>Upload NIC</Link> to ensure booking confirmation.
+                    </span>
+                  </div>
+                )}
+                <form onSubmit={handleBookingSubmit}>
+                  <div className="form-group">
+                    <label>Pickup Date & Time</label>
+                    <input 
+                      type="datetime-local" 
+                      value={pickupDate}
+                      onChange={(e) => { setPickupDate(e.target.value); setTotalAmount(0); }}
+                      required 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Return Date & Time</label>
+                    <input 
+                      type="datetime-local" 
+                      value={returnDate}
+                      onChange={(e) => { setReturnDate(e.target.value); setTotalAmount(0); }}
+                      required 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Pickup Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter pickup location"
+                      value={pickupLocation}
+                      onChange={(e) => setPickupLocation(e.target.value)}
+                      required 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Return Location</label>
+                    <input 
+                      type="text" 
+                      placeholder="Enter return location"
+                      value={returnLocation}
+                      onChange={(e) => setReturnLocation(e.target.value)}
+                      required 
+                    />
+                  </div>
+                  <div className="form-group checkbox-group">
+                    <label>
+                      <input 
+                        type="checkbox" 
+                        checked={withDriver}
+                        onChange={(e) => { setWithDriver(e.target.checked); setTotalAmount(0); }}
+                      />
+                      Include Driver (+2,500 LKR/day)
+                    </label>
+                  </div>
+                  
+                  <button 
+                    type="button" 
+                    onClick={handleCalculatePrice}
+                    disabled={calculatingPrice}
+                    style={{
+                      width: '100%', 
+                      padding: '12px', 
+                      backgroundColor: '#3b82f6', 
+                      color: 'white', 
+                      border: 'none', 
+                      borderRadius: '8px', 
+                      fontWeight: '600',
+                      cursor: 'pointer',
+                      marginBottom: '15px'
+                    }}
+                  >
+                    {calculatingPrice ? 'Calculating...' : 'Calculate Total Price'}
+                  </button>
+
+                  <div className="booking-summary">
+                    <span>Total Amount:</span>
+                    <strong>
+                      {calculatingPrice ? 'Calculating...' : `LKR ${totalAmount.toLocaleString()}`}
+                    </strong>
+                  </div>
+
+                  <div className="booking-actions">
+                    <button type="submit" className="btn-submit" disabled={isSubmitting}>
+                      {isSubmitting ? 'Submitting...' : 'Confirm Request'}
+                    </button>
+                    <button type="button" className="btn-cancel" onClick={() => setShowBookingForm(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
 
             {/* Trust Badges */}
             <div className="cdetail-trust">

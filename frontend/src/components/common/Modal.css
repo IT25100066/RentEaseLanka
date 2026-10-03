@@ -1,24 +1,31 @@
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(10, 18, 30, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease;
+  animation: fadeIn 0.25s ease;
+  min-height: 100dvh;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .modal-container {
+  position: relative;
   background: var(--bg-card);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
+  border-radius: var(--radius-2xl, 28px);
+  box-shadow: var(--shadow-2xl);
+  border: 1px solid rgba(255,255,255,0.5);
   width: 100%;
-  max-height: 90vh;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100dvh - 40px);
   overflow-y: auto;
-  animation: scaleIn 0.25s ease;
+  animation: bounceIn 0.4s ease;
+  margin: auto;
 }
 
 .modal-sm { max-width: 420px; }
@@ -34,14 +41,16 @@
 }
 
 .modal-title {
-  font-size: 1.15rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
   font-weight: 700;
   color: var(--text-primary);
+  letter-spacing: -0.02em;
 }
 
 .modal-close {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -49,14 +58,33 @@
   font-size: 1.2rem;
   color: var(--text-secondary);
   background: transparent;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-default);
 }
 
 .modal-close:hover {
-  background: var(--slate-100);
-  color: var(--text-primary);
+  background: var(--rose-50);
+  color: var(--rose-600);
+  transform: scale(1.1) rotate(5deg);
 }
 
 .modal-body {
   padding: 24px 28px 28px;
+}
+
+@media (max-width: 600px) {
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 12px;
+  }
+
+  .modal-container {
+    max-width: 100%;
+    max-height: calc(100dvh - 24px);
+  }
+
+  .modal-header,
+  .modal-body {
+    padding-right: 18px;
+    padding-left: 18px;
+  }
 }

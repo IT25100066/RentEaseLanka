@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import API, { BASE_URL } from '../api/axiosInstance';
 import { toast } from 'react-toastify';
 import StatusBadge from '../components/common/StatusBadge';
@@ -9,26 +10,37 @@ import EditVehicleModal from '../components/fleet/EditVehicleModal';
 import MaintenanceCard from '../components/maintenance/MaintenanceCard';
 import ScheduleMaintenanceForm from '../components/maintenance/ScheduleMaintenanceForm';
 import CompleteMaintenanceModal from '../components/maintenance/CompleteMaintenanceModal';
+import AddVehicleImagesModal from '../components/fleet/AddVehicleImagesModal';
 import EmptyState from '../components/common/EmptyState';
 import {
   HiOutlinePencil,
   HiOutlinePlus,
   HiOutlineArrowLeft,
+  HiOutlinePhotograph,
 } from 'react-icons/hi';
 import './VehicleDetailPage.css';
-
 
 export default function VehicleDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { role } = useAuth();
   const [vehicle, setVehicle] = useState(null);
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [showAddImagesModal, setShowAddImagesModal] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
+
+  const canManageImages = role === 'MANAGER' || role === 'ADMIN';
+
+  const getFleetPath = () => {
+    if (role === 'ADMIN') return '/admin/fleet';
+    if (role === 'STAFF') return '/staff/fleet';
+    return '/manager/fleet';
+  };
 
   const fetchVehicle = async () => {
     try {
@@ -36,7 +48,7 @@ export default function VehicleDetailPage() {
       setVehicle(res.data);
     } catch (err) {
       toast.error('Vehicle not found');
-      navigate('/admin/fleet');
+      navigate(getFleetPath());
     }
   };
 
@@ -93,7 +105,7 @@ export default function VehicleDetailPage() {
     <div className="page-container" id="vehicle-detail-page">
       <button
         className="btn btn-ghost back-btn"
-        onClick={() => navigate('/admin/fleet')}
+        onClick={() => navigate(getFleetPath())}
         id="back-to-fleet"
       >
         <HiOutlineArrowLeft />
@@ -106,18 +118,33 @@ export default function VehicleDetailPage() {
           <div className="detail-main-image">
             {images.length > 0 ? (
               <img
-                src={`${BASE_URL}${images[activeImage]}`}
+                src={`${BASE_URL}${images[activeImage].startsWith('/') ? '' : '/'}${images[activeImage]}`}
                 alt={vehicle.model}
                 id="vehicle-main-image"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                }}
               />
-            ) : (
-              <div className="detail-no-image">
-                <span>🚗</span>
-                <p>No images available</p>
-              </div>
-            )}
+            ) : null}
+            <div className="detail-no-image" style={{ display: images.length > 0 ? 'none' : 'flex' }}>
+              <span>🚗</span>
+              <p>No images available</p>
+              {canManageImages && (
+                <button
+                  type="button"
+                  className="btn btn-secondary btn-sm"
+                  style={{ marginTop: '8px' }}
+                  onClick={() => setShowAddImagesModal(true)}
+                  id="empty-add-images-btn"
+                >
+                  <HiOutlinePhotograph />
+                  Upload Images
+                </button>
+              )}
+            </div>
           </div>
-          {images.length > 1 && (
+          {(images.length > 1 || canManageImages) && (
             <div className="detail-thumbnails">
               {images.map((url, idx) => (
                 <button
@@ -125,9 +152,21 @@ export default function VehicleDetailPage() {
                   className={`thumb ${idx === activeImage ? 'thumb-active' : ''}`}
                   onClick={() => setActiveImage(idx)}
                 >
-                  <img src={`${BASE_URL}${url}`} alt={`Thumb ${idx + 1}`} />
+                  <img src={`${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`} alt={`Thumb ${idx + 1}`} />
                 </button>
               ))}
+              {canManageImages && (
+                <button
+                  type="button"
+                  className="thumb thumb-add"
+                  onClick={() => setShowAddImagesModal(true)}
+                  id="thumb-add-image-btn"
+                  title="Add More Vehicle Images"
+                >
+                  <HiOutlinePlus style={{ fontSize: '1.1rem' }} />
+                  <span>Add</span>
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -179,8 +218,18 @@ export default function VehicleDetailPage() {
               <HiOutlinePencil />
               Edit Vehicle
             </button>
+            {canManageImages && (
+              <button
+                className="btn btn-secondary"
+                onClick={() => setShowAddImagesModal(true)}
+                id="add-vehicle-images-btn"
+              >
+                <HiOutlinePhotograph />
+                Add Images
+              </button>
+            )}
             <button
-              className="btn btn-secondary"
+              className="btn btn-ghost"
               onClick={() => setShowScheduleModal(true)}
               id="schedule-maintenance-btn"
             >
@@ -228,6 +277,16 @@ export default function VehicleDetailPage() {
           onClose={() => setShowEditModal(false)}
         />
       </Modal>
+
+      {/* Add Images Modal (Manager Feature) */}
+      <AddVehicleImagesModal
+        vehicle={vehicle}
+        isOpen={showAddImagesModal}
+        onClose={() => setShowAddImagesModal(false)}
+        onSuccess={() => {
+          fetchVehicle();
+        }}
+      />
 
       {/* Schedule Maintenance Modal */}
       <Modal

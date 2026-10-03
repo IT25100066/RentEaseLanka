@@ -1,5 +1,6 @@
 .add-vehicle-form {
   animation: fadeInUp 0.3s ease;
+  padding: 20px;
 }
 
 .image-upload-zone {

@@ -3,11 +3,15 @@ package com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.Fle
 import com.RentEaseLanka.RentEaseLankaTeam.Fleet_And_Maintenance_Management.FleetManagement.Model.DTOs.*;
 import org.jspecify.annotations.Nullable;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 public interface FleetService {
 
   void createVehicleWithImages(VehicleCreateRequestDTO vehicleCreateRequest);
+
+  List<String> addVehicleImages(Long vehicleId, List<MultipartFile> images);
 
   List<VehicleResponseDTO> getAllVehicles();
 

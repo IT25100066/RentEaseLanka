@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -45,6 +46,29 @@ public class FleetController {
             return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
+    }
+
+    @PostMapping(value = {"/vehicle/{id}/images", "/manager/vehicle/{id}/images"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('MANAGER') or hasRole('ADMIN')")
+    public ResponseEntity<?> addVehicleImages(
+            @PathVariable("id") Long id,
+            @RequestParam("images") List<MultipartFile> images) {
+        try {
+            if (images == null || images.isEmpty()) {
+                return new ResponseEntity<>("Please select at least one image to upload", HttpStatus.BAD_REQUEST);
+            }
+            List<String> uploadedPaths = fleetService.addVehicleImages(id, images);
+            return new ResponseEntity<>(uploadedPaths, HttpStatus.OK);
+        } catch (IllegalArgumentException e) {
+            log.warn("Validation failed adding vehicle images: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (RuntimeException e) {
+            log.error("Error adding vehicle images: {}", e.getMessage());
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            log.error("Failed to add vehicle images", e);
+            return new ResponseEntity<>("Internal Server Error", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     // GET all vehicles with their image URLs

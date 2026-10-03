@@ -60,4 +60,17 @@ public class FileStorageService {
         }
     }
 
+    public boolean deleteFile(String relativeFilePath) {
+        if (relativeFilePath == null || relativeFilePath.isBlank()) {
+            return false;
+        }
+        try {
+            String cleaned = relativeFilePath.startsWith("/") ? relativeFilePath.substring(1) : relativeFilePath;
+            Path filePath = Paths.get(cleaned);
+            return Files.deleteIfExists(filePath);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
 }

@@ -1,6 +1,9 @@
 package com.RentEaseLanka.RentEaseLankaTeam.User_Management.Config;
 
+<<<<<<< Updated upstream
 import lombok.RequiredArgsConstructor;
+=======
+>>>>>>> Stashed changes
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,13 +24,25 @@ import java.util.List;
 
 @Configuration(proxyBeanMethods = false)
 @EnableWebSecurity
+<<<<<<< Updated upstream
 @RequiredArgsConstructor
+=======
+>>>>>>> Stashed changes
 @EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
 
+<<<<<<< Updated upstream
+=======
+    public SecurityConfig(JwtAuthenticationFilter jwtAuthFilter, AuthenticationProvider authenticationProvider) {
+        super();
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.authenticationProvider = authenticationProvider;
+    }
+
+>>>>>>> Stashed changes
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -41,6 +56,10 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                         .requestMatchers("/api/category/**").permitAll()
                         .requestMatchers("/api/vehicles/**").permitAll()
+<<<<<<< Updated upstream
+=======
+                        .requestMatchers("/api/reviews/public").permitAll()
+>>>>>>> Stashed changes
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/booking/calculate-price").permitAll()
                         .requestMatchers("/error").permitAll()
@@ -48,6 +67,11 @@ public class SecurityConfig {
                         // Role-protected endpoints
                         .requestMatchers("/api/booking/create").hasRole("CUSTOMER")
                         .requestMatchers("/api/customer/nic-upload").hasRole("CUSTOMER")
+<<<<<<< Updated upstream
+=======
+                        .requestMatchers("/api/driver/my-bookings/**", "/api/driver/profile").hasRole("DRIVER")
+                        .requestMatchers("/api/driver/**").hasAnyRole("DRIVER", "STAFF", "MANAGER", "ADMIN")
+>>>>>>> Stashed changes
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/manager/**").hasAnyRole("MANAGER", "ADMIN")
                         .requestMatchers("/api/staff/**").hasAnyRole("STAFF", "MANAGER", "ADMIN")

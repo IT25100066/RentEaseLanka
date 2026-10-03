@@ -138,6 +138,7 @@ SCHEDULED ──startMaintenance()──▶ IN_PROGRESS ──completeMaintenanc
 | `GET` | `/api/pendingVehicles` | List vehicles with PENDING status | ✅ Authenticated |
 | `POST` | `/api/manager/vehicle/accept` | Approve pending vehicles (batch) | ✅ MANAGER / ADMIN |
 | `GET` | `/api/vehicle?filterBy=...` | Filter vehicles by category/status | ❌ Public |
+| `POST` | `/api/vehicle/{id}/images` | Add vehicle images (multipart) | ✅ MANAGER / ADMIN |
 | `DELETE` | `/api/vehicle/{id}/remove` | Set vehicle to OUT_OF_SERVICE | ✅ MANAGER / ADMIN |
 | `DELETE` | `/api/vehicle/{id}/delete` | Permanently delete vehicle | ✅ MANAGER / ADMIN |
 

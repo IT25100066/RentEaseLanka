@@ -21,7 +21,7 @@ export default function AddCategoryForm({ onSuccess }) {
       await API.post('/category/create', {
         name: form.name,
         description: form.description,
-        price: Number(form.basePrice),
+        basePrice: Number(form.basePrice),
       });
       toast.success('Category created successfully!');
       setForm({ name: '', description: '', basePrice: '' });

@@ -1,0 +1,237 @@
+#financial-page {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.financial-page-header {
+  align-items: center;
+}
+
+.financial-page-header .btn svg {
+  font-size: 1rem;
+}
+
+.financial-filters {
+  display: flex;
+  align-items: end;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+  padding: 18px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.financial-filter-field {
+  display: flex;
+  min-width: 170px;
+  flex: 1 1 170px;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.financial-filter-field label {
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.financial-filter-field input,
+.financial-filter-field select {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  background: var(--slate-50);
+  font: inherit;
+  outline: none;
+}
+
+.financial-filter-field input:focus,
+.financial-filter-field select:focus {
+  border-color: var(--primary-400);
+  box-shadow: 0 0 0 3px var(--primary-50);
+}
+
+.financial-filter-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+}
+
+.financial-presets {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-basis: 100%;
+  flex-wrap: wrap;
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+}
+
+.financial-presets button {
+  padding: 4px 9px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  color: var(--primary-600);
+  background: var(--primary-50);
+  font: inherit;
+  cursor: pointer;
+}
+
+.financial-presets button:hover {
+  border-color: var(--primary-300);
+  background: var(--primary-100);
+}
+
+.financial-period {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 8px 0 16px;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+}
+
+.financial-period svg {
+  color: var(--primary-500);
+  font-size: 1.15rem;
+}
+
+.financial-period span {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.financial-period strong {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.financial-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.financial-summary-card {
+  display: flex;
+  min-height: 142px;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 20px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+.financial-summary-card--net {
+  border-color: var(--primary-200);
+  box-shadow: var(--shadow-md);
+}
+
+.financial-card-icon {
+  display: flex;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--primary-600);
+  background: var(--primary-50);
+  font-size: 1.25rem;
+}
+
+.financial-summary-card--cost .financial-card-icon {
+  color: var(--rose-600);
+  background: var(--rose-50);
+}
+
+.financial-summary-card--net .financial-card-icon {
+  color: var(--emerald-600);
+  background: var(--emerald-50);
+}
+
+.financial-summary-card--count .financial-card-icon {
+  color: var(--sky-600);
+  background: var(--sky-50);
+}
+
+.financial-summary-card div:last-child {
+  min-width: 0;
+}
+
+.financial-summary-card span,
+.financial-summary-card strong,
+.financial-summary-card small {
+  display: block;
+}
+
+.financial-summary-card span {
+  color: var(--text-secondary);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.financial-summary-card strong {
+  margin: 8px 0 5px;
+  overflow-wrap: anywhere;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(1.25rem, 2.3vw, 1.8rem);
+  font-weight: 800;
+}
+
+.financial-summary-card small {
+  color: var(--text-tertiary);
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+
+.financial-empty-state {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  background: var(--bg-card);
+  text-align: center;
+}
+
+@media (max-width: 1050px) {
+  .financial-summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .financial-page-header {
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .financial-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .financial-filter-field,
+  .financial-filter-actions {
+    width: 100%;
+  }
+
+  .financial-filter-actions .btn {
+    flex: 1;
+  }
+
+  .financial-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}

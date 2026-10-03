@@ -4,14 +4,15 @@
   gap: 6px;
   padding: 4px 12px;
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-size: 0.73rem;
+  font-weight: 700;
   white-space: nowrap;
+  letter-spacing: 0.02em;
 }
 
 .badge-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   flex-shrink: 0;
 }
@@ -19,9 +20,12 @@
 .badge-emerald {
   background: var(--emerald-50);
   color: var(--emerald-700);
+  border: 1px solid var(--emerald-100);
 }
 .badge-emerald .badge-dot {
   background: var(--emerald-500);
+  animation: pulseDot 2s ease-in-out infinite;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
 }
 
 .badge-amber {

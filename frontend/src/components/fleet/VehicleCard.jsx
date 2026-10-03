@@ -1,29 +1,45 @@
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import StatusBadge from '../common/StatusBadge';
 import { BASE_URL } from '../../api/axiosInstance';
 import { HiOutlineEye, HiOutlineLocationMarker } from 'react-icons/hi';
 import './VehicleCard.css';
 
-
 export default function VehicleCard({ vehicle }) {
   const navigate = useNavigate();
+  const { role } = useAuth();
 
-  const imageUrl = vehicle.imageUrls && vehicle.imageUrls.length > 0
-    ? `${BASE_URL}${vehicle.imageUrls[0]}`
+  const firstImage = vehicle.imageUrls && vehicle.imageUrls.length > 0 ? vehicle.imageUrls[0] : null;
+  const imageUrl = firstImage
+    ? `${BASE_URL}${firstImage.startsWith('/') ? '' : '/'}${firstImage}`
     : null;
+
+  const handleView = () => {
+    let basePath = 'staff';
+    if (role === 'ADMIN') basePath = 'admin';
+    else if (role === 'MANAGER') basePath = 'manager';
+    navigate(`/${basePath}/vehicle/${vehicle.id}`);
+  };
 
   return (
     <div className="vehicle-card card" id={`vehicle-card-${vehicle.id}`}>
       <div className="vehicle-card-image">
         {imageUrl ? (
-          <img src={imageUrl} alt={vehicle.model} loading="lazy" />
-        ) : (
-          <div className="vehicle-no-image">
-            <span>🚗</span>
-            <p>No Image</p>
-          </div>
-        )}
-        <div className="vehicle-card-badge">
+          <img
+            src={imageUrl}
+            alt={vehicle.model}
+            loading="lazy"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        <div className="vehicle-no-image" style={{ display: imageUrl ? 'none' : 'flex' }}>
+          <span>🚗</span>
+          <p>No Image</p>
+        </div>
+        <div >
           <StatusBadge status={vehicle.status} />
         </div>
       </div>
@@ -57,7 +73,7 @@ export default function VehicleCard({ vehicle }) {
           </div>
           <button
             className="btn btn-secondary btn-sm"
-            onClick={() => navigate(`/admin/vehicle/${vehicle.id}`)}
+            onClick={handleView}
             id={`view-vehicle-${vehicle.id}`}
           >
             <HiOutlineEye />

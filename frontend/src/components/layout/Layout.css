@@ -1,3 +1,4 @@
+/* ===== APP SHELL LAYOUT ===== */
 .app-layout {
   display: flex;
   min-height: 100vh;
@@ -6,6 +7,8 @@
 .main-area {
   flex: 1;
   margin-left: var(--sidebar-width);
+  min-width: 0; /* prevent flex child from overflowing */
+  transition: margin-left var(--transition-default);
 }
 
 .main-content {
@@ -13,7 +16,23 @@
   min-height: calc(100vh - var(--topbar-height));
 }
 
-@media (max-width: 768px) {
+/* Overlay for mobile sidebar */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  animation: fadeIn 0.2s ease;
+}
+
+.sidebar-overlay.visible {
+  display: block;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 900px) {
   .main-area {
     margin-left: 0;
   }

@@ -1,24 +1,64 @@
 services:
-  # 1. Microsoft SQL Server Database
+
+  # ─── 1. SQL Server Database ───────────────────────────────────────────────
   mssql-db:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mssql-db
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD}
       MSSQL_PID: "Developer"
     ports:
-      - "1433:1433"
+      - "14333:1433"
     volumes:
       - mssql-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - |
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "$$MSSQL_SA_PASSWORD" -C -Q "SELECT 1" 2>/dev/null ||
+          /opt/mssql-tools/bin/sqlcmd  -S localhost -U sa -P "$$MSSQL_SA_PASSWORD"    -Q "SELECT 1" 2>/dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
 
+  # ─── 2. Redis Cache ────────────────────────────────────────────────────────
   redis-cache:
-    image: redis:7-alpine
+    image: redis:alpine
     container_name: redis-cache
     ports:
       - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
 
-  # 2. Spring Boot Backend
+  # ─── 3. Database Initialiser (one-shot) ───────────────────────────────────
+  # Waits for SQL Server to be healthy, then creates the RentEaseLanka
+  # database if it does not already exist. Backend only starts after this
+  # service exits successfully.
+  db-init:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql-db-init
+    depends_on:
+      mssql-db:
+        condition: service_healthy
+    environment:
+      MSSQL_SA_PASSWORD: ${DB_PASSWORD}
+    entrypoint:
+      - /bin/bash
+      - -c
+      - |
+        echo "Creating database RentEaseLanka if not exists...";
+        SQLCMD=/opt/mssql-tools18/bin/sqlcmd;
+        [ ! -f "$$SQLCMD" ] && SQLCMD=/opt/mssql-tools/bin/sqlcmd;
+        $$SQLCMD -S mssql-db -U sa -P "$$MSSQL_SA_PASSWORD" -C \
+          -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'RentEaseLanka') CREATE DATABASE [RentEaseLanka];";
+        echo "Done."
+
+  # ─── 4. Spring Boot Backend ───────────────────────────────────────────────
   backend:
     build:
       context: ./RentEaseLankaTeam
@@ -29,20 +69,25 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - mssql-db
+      mssql-db:
+        condition: service_healthy
+      db-init:
+        condition: service_completed_successfully
+      redis-cache:
+        condition: service_healthy
     volumes:
       - ./RentEaseLankaTeam/uploads:/app/uploads
-      - ./RentEaseLankaTeam/src:/app/src
     environment:
       - SPRING_PROFILES_ACTIVE=prod
       - DB_URL=${DB_URL}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
-      - SERVER_PORT=${SERVER_PORT}
-      - REDIS_SERVER_NAME=${REDIS_SERVER_NAME}
-      - REDIS_SERVER_PORT=${REDIS_SERVER_PORT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      - SERVER_PORT=${SERVER_PORT:-8081}
+      - REDIS_SERVER_NAME=redis-cache
+      - REDIS_SERVER_PORT=${REDIS_SERVER_PORT:-6379}
 
-  # 3. Vite React Frontend
+  # ─── 5. Vite React Frontend ────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
@@ -51,7 +96,7 @@ services:
         - it25100066/renteaselanka-frontend:latest
     container_name: Rent-Ease-Lanka-Frontend
     ports:
-      - "5173:5173" # Exposing port 5173 for the Vite development server
+      - "5173:5173"
     depends_on:
       - backend
 

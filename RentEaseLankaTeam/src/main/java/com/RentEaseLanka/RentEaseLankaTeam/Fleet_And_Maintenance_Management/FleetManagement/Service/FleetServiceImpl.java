@@ -96,6 +96,37 @@ public class FleetServiceImpl implements FleetService {
     }
 
     @Override
+    @Transactional
+    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
+    public List<String> addVehicleImages(Long vehicleId, List<MultipartFile> images) {
+        if (images == null || images.isEmpty()) {
+            throw new IllegalArgumentException("No images provided for upload.");
+        }
+
+        Vehicle vehicle = vehicleRepository.findById(vehicleId)
+                .orElseThrow(() -> new RuntimeException("Vehicle not found with id: " + vehicleId));
+
+        List<String> relativeImagePaths = fileStorageService.storeFiles(vehicle.getId(), images);
+        if (relativeImagePaths.isEmpty()) {
+            throw new IllegalArgumentException("No valid image files could be saved.");
+        }
+
+        List<VehicleImage> imageEntities = new ArrayList<>();
+        for (String path : relativeImagePaths) {
+            VehicleImage img = new VehicleImage();
+            img.setVehicle(vehicle);
+            img.setFilePath(path);
+            img.setFileName(path.substring(path.lastIndexOf("/") + 1));
+            imageEntities.add(img);
+        }
+
+        vehicleImageRepository.saveAll(imageEntities);
+        log.info("Successfully added {} images to vehicle id: {}", imageEntities.size(), vehicleId);
+
+        return relativeImagePaths;
+    }
+
+    @Override
     @Cacheable(value = "Vehicles", key = "'allVehicles'")
     public List<VehicleResponseDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();

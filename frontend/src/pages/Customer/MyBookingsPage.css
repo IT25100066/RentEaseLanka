@@ -1,0 +1,266 @@
+#my-bookings-page {
+  animation: fadeIn 0.4s ease-out;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 110px 20px 40px 20px;
+}
+
+.bookings-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+}
+
+.btn-refresh-bookings {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary, #0f172a);
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-sm, 0 1px 2px 0 rgba(0, 0, 0, 0.05));
+}
+
+.btn-refresh-bookings:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.customer-bookings-table-container {
+  width: 100%;
+  margin-top: 10px;
+  overflow-x: auto;
+  border: 1px solid var(--border-light, #e2e8f0);
+  border-radius: var(--radius-lg, 12px);
+  background: var(--bg-card, #ffffff);
+  box-shadow: var(--shadow-sm, 0 1px 3px 0 rgba(0, 0, 0, 0.1));
+}
+
+.customer-bookings-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.customer-bookings-table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.customer-bookings-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+
+.customer-bookings-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.booking-vehicle-name {
+  font-weight: 700;
+  color: #0f172a;
+  font-size: 0.95rem;
+}
+
+.booking-vehicle-sub {
+  color: #64748b;
+  font-size: 0.75rem;
+  display: block;
+  margin-top: 2px;
+}
+
+.booking-date-cell {
+  font-size: 0.82rem;
+}
+
+.pickup-date-line,
+.return-date-line {
+  margin-bottom: 3px;
+  color: #334155;
+}
+
+.pickup-date-line strong,
+.return-date-line strong {
+  color: #64748b;
+  font-size: 0.75rem;
+  display: inline-block;
+  min-width: 50px;
+}
+
+/* Payment Status & Breakdown */
+.payment-status-cell {
+  min-width: 170px;
+}
+
+.invoice-status-row {
+  margin-bottom: 6px;
+}
+
+.payment-pill {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.payment-pill.paid {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.payment-pill.partially_paid {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.payment-pill.unpaid {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.payment-pill.no_show {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.invoice-amount-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.78rem;
+}
+
+.amount-line {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  color: #475569;
+}
+
+.amount-line.text-green {
+  color: #059669;
+}
+
+.amount-line.text-due {
+  color: #e11d48;
+  font-weight: 700;
+}
+
+/* Actions */
+.customer-booking-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.btn-customer-pay {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-customer-pay:hover:not(:disabled) {
+  background: #1d4ed8;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+}
+
+.btn-customer-invoice {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: #0f172a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-customer-invoice:hover:not(:disabled) {
+  background: #1e293b;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+}
+
+.customer-booking-cancel {
+  padding: 7px 12px;
+  font-size: 0.8rem;
+  border-radius: 8px;
+}
+
+.deposit-hold-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.hold-pending-notice {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.btn-customer-deposit {
+  background: #0284c7;
+}
+
+.btn-customer-deposit:hover:not(:disabled) {
+  background: #0369a1;
+  box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+}
+
+@media (max-width: 900px) {
+  .customer-bookings-table th,
+  .customer-bookings-table td {
+    padding: 10px;
+  }
+
+  .customer-booking-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -8,7 +8,7 @@ export default function CategoryCard({ category, onEdit }) {
         <HiOutlineCurrencyDollar />
       </div>
       <div className="category-card-info">
-        <h3 className="category-name">{category.name}</h3>
+        <h3 className="category-name">{category.name.toUpperCase()}</h3>
         <p className="category-description">{category.description || 'No description available'}</p>
         <div className="category-price">
           <span className="price-tag">Base Price</span>

@@ -9,6 +9,7 @@ import {
   HiOutlineTruck,
   HiOutlineX,
 } from 'react-icons/hi';
+import StatusBadge from '../components/common/StatusBadge';
 import './VehiclesPage.css';
 
 
@@ -29,7 +30,7 @@ export default function VehiclesPage() {
           API.get('/vehicles'),
           API.get('/category'),
         ]);
-        const available = vehiclesRes.data.filter((v) => v.status === 'AVAILABLE');
+        const available = vehiclesRes.data.filter((v) => v.status != 'OUT_OF_SERVICE');
         setVehicles(available);
         setCategories(catRes.data);
       } catch (err) {
@@ -165,19 +166,24 @@ export default function VehiclesPage() {
                 <div className="rental-card-image">
                   {vehicle.imageUrls && vehicle.imageUrls.length > 0 ? (
                     <img
-                      src={`${BASE_URL}${vehicle.imageUrls[0]}`}
+                      src={`${BASE_URL}${vehicle.imageUrls[0].startsWith('/') ? '' : '/'}${vehicle.imageUrls[0]}`}
                       alt={vehicle.model}
                       loading="lazy"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                      }}
                     />
-                  ) : (
-                    <div className="rental-no-image">
-                      <span>🚗</span>
-                    </div>
-                  )}
+                  ) : null}
+                  <div className="rental-no-image" style={{ display: vehicle.imageUrls && vehicle.imageUrls.length > 0 ? 'none' : 'flex' }}>
+                    <span>🚗</span>
+                  </div>
                   <div className="rental-card-category">
                     {vehicle.categoryName || 'Vehicle'}
                   </div>
-                  <div className="rental-card-status">Available</div>
+                  <div className="rental-card-status">
+                    <StatusBadge status={vehicle.status} />
+                  </div>
                 </div>
                 <div className="rental-card-body">
                   <div className="rental-card-top">

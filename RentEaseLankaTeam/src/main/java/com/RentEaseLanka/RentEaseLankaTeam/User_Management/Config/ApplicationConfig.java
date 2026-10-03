@@ -1,7 +1,10 @@
 package com.RentEaseLanka.RentEaseLankaTeam.User_Management.Config;
 
 import com.RentEaseLanka.RentEaseLankaTeam.User_Management.Repository.UserRepository;
+<<<<<<< Updated upstream
 import lombok.RequiredArgsConstructor;
+=======
+>>>>>>> Stashed changes
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -14,11 +17,22 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
+<<<<<<< Updated upstream
 @RequiredArgsConstructor
+=======
+>>>>>>> Stashed changes
 public class ApplicationConfig {
 
     private final UserRepository repository;
 
+<<<<<<< Updated upstream
+=======
+    public ApplicationConfig(UserRepository repository) {
+        super();
+        this.repository = repository;
+    }
+
+>>>>>>> Stashed changes
     @Bean
     public UserDetailsService userDetailsService() {
         return username -> repository.findByEmail(username)

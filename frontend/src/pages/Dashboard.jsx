@@ -8,6 +8,7 @@ import {
   HiOutlineClock,
   HiOutlineExclamation,
   HiOutlineCollection,
+  HiOutlineCalendar,
 } from 'react-icons/hi';
 import StatusBadge from '../components/common/StatusBadge';
 import LoadingSpinner from '../components/common/LoadingSpinner';
@@ -144,6 +145,12 @@ export default function Dashboard() {
               <HiOutlineCog />
             </div>
             <span>Maintenance</span>
+          </button>
+          <button className="quick-action-card" onClick={() => navigate('/admin/bookings')} id="qa-bookings">
+            <div className="qa-icon sky">
+              <HiOutlineCalendar />
+            </div>
+            <span>Bookings</span>
           </button>
         </div>
       </div>

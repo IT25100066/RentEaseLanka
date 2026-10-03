@@ -51,14 +51,35 @@ export default function PendingVehiclesPage() {
     }
     setApproving(true);
     try {
-      await API.post('/vehicle/makeAvailable', selected);
+      await API.post('/manager/vehicle/accept', selected);
       toast.success(`${selected.length} vehicle(s) approved successfully!`);
       setSelected([]);
       fetchPending();
     } catch (err) {
-      toast.error('Failed to approve vehicles.');
+      toast.error(err.response?.data?.message || err.response?.data || 'Failed to approve vehicles.');
     } finally {
       setApproving(false);
+    }
+  };
+
+  const handleSingleApprove = async (id) => {
+    try {
+      await API.post('/manager/vehicle/accept', [id]);
+      toast.success('Vehicle approved successfully!');
+      fetchPending();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to approve vehicle.');
+    }
+  };
+
+  const handleSingleReject = async (id) => {
+    if (!window.confirm('Are you sure you want to reject and remove this vehicle?')) return;
+    try {
+      await API.delete(`/vehicle/${id}/delete`);
+      toast.success('Vehicle rejected and removed.');
+      fetchPending();
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to reject vehicle.');
     }
   };
 
@@ -70,7 +91,7 @@ export default function PendingVehiclesPage() {
         <div>
           <h1 className="page-title">Pending Approvals</h1>
           <p className="page-subtitle">
-            {vehicles.length} vehicle(s) awaiting approval
+            {vehicles.length} vehicle(s) awaiting approval to enter active fleet
           </p>
         </div>
         {vehicles.length > 0 && (
@@ -100,7 +121,7 @@ export default function PendingVehiclesPage() {
       {vehicles.length === 0 ? (
         <EmptyState
           title="No pending vehicles"
-          message="All vehicles have been reviewed. Check back later!"
+          message="All vehicles have been reviewed and approved. Check back later!"
           icon={<HiOutlineClock />}
         />
       ) : (
@@ -122,41 +143,74 @@ export default function PendingVehiclesPage() {
                 <th>Year</th>
                 <th>Daily Rate</th>
                 <th>Status</th>
+                <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {vehicles.map((v) => (
-                <tr
-                  key={v.id}
-                  className={selected.includes(v.id) ? 'row-selected' : ''}
-                >
-                  <td>
-                    <input
-                      type="checkbox"
-                      checked={selected.includes(v.id)}
-                      onChange={() => toggleSelect(v.id)}
-                      id={`select-vehicle-${v.id}`}
-                    />
-                  </td>
-                  <td>
-                    <div className="table-vehicle-cell">
-                      <div className="table-vehicle-thumb">
-                        {v.imageUrls && v.imageUrls.length > 0 ? (
-                          <img src={`${BASE_URL}${v.imageUrls[0]}`} alt={v.model} />
-                        ) : (
-                          <span>🚗</span>
-                        )}
+              {vehicles.map((v) => {
+                const imgUrl = v.imageUrls && v.imageUrls.length > 0
+                  ? `${BASE_URL}${v.imageUrls[0].startsWith('/') ? '' : '/'}${v.imageUrls[0]}`
+                  : null;
+
+                return (
+                  <tr
+                    key={v.id}
+                    className={selected.includes(v.id) ? 'row-selected' : ''}
+                  >
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={selected.includes(v.id)}
+                        onChange={() => toggleSelect(v.id)}
+                        id={`select-vehicle-${v.id}`}
+                      />
+                    </td>
+                    <td>
+                      <div className="table-vehicle-cell">
+                        <div className="table-vehicle-thumb">
+                          {imgUrl ? (
+                            <img
+                              src={imgUrl}
+                              alt={v.model}
+                              onError={(e) => {
+                                e.target.style.display = 'none';
+                                e.target.nextSibling && (e.target.nextSibling.style.display = 'inline');
+                              }}
+                            />
+                          ) : null}
+                          <span style={{ display: imgUrl ? 'none' : 'inline' }}>🚗</span>
+                        </div>
+                        <span className="table-vehicle-model">{v.model}</span>
                       </div>
-                      <span className="table-vehicle-model">{v.model}</span>
-                    </div>
-                  </td>
-                  <td><code className="plate-code">{v.licensePlate}</code></td>
-                  <td>{v.categoryName || '—'}</td>
-                  <td>{v.year}</td>
-                  <td className="rate-cell">LKR {v.dailyRentalRate?.toLocaleString()}</td>
-                  <td><StatusBadge status={v.status} /></td>
-                </tr>
-              ))}
+                    </td>
+                    <td><code className="plate-code">{v.licensePlate}</code></td>
+                    <td>{v.categoryName || '—'}</td>
+                    <td>{v.year}</td>
+                    <td className="rate-cell">LKR {v.dailyRentalRate?.toLocaleString()}</td>
+                    <td><StatusBadge status={v.status} /></td>
+                    <td>
+                      <div className="action-buttons" style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          className="btn btn-sm btn-success"
+                          style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                          title="Approve Vehicle"
+                          onClick={() => handleSingleApprove(v.id)}
+                        >
+                          ✓ Accept
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          style={{ padding: '4px 8px', fontSize: '0.8rem' }}
+                          title="Reject Vehicle"
+                          onClick={() => handleSingleReject(v.id)}
+                        >
+                          ✕ Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

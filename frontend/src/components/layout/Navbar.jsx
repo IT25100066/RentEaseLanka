@@ -1,25 +1,24 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   HiOutlineHome,
   HiOutlineTruck,
-  HiOutlineInformationCircle,
-  HiOutlinePhone,
-  HiOutlineCog,
   HiOutlineMenu,
   HiOutlineX,
+  HiOutlineUser,
+  HiOutlineLogout,
+  HiOutlineClipboardList,
+  HiOutlineIdentification,
 } from 'react-icons/hi';
+import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
-
-const navLinks = [
-  { path: '/', label: 'Home', icon: HiOutlineHome },
-  { path: '/vehicles', label: 'Vehicles', icon: HiOutlineTruck },
-];
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated, user, role, logout } = useAuth();
   const isHome = location.pathname === '/';
 
   useEffect(() => {
@@ -34,6 +33,22 @@ export default function Navbar() {
     setMobileOpen(false);
   }, [location]);
 
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
+
+  // Get the panel link for the current user's role (only their own)
+  const getPanelLink = () => {
+    switch (role) {
+      case 'ADMIN': return { path: '/admin', label: 'Admin Panel' };
+      case 'MANAGER': return { path: '/manager', label: 'Manager Panel' };
+      case 'STAFF': return { path: '/staff', label: 'Staff Panel' };
+      default: return null;
+    }
+  };
+
+  const panelLink = getPanelLink();
   const navClass = `navbar ${scrolled || !isHome ? 'navbar-solid' : 'navbar-transparent'}`;
 
   return (
@@ -48,26 +63,85 @@ export default function Navbar() {
         </NavLink>
 
         <nav className={`navbar-links ${mobileOpen ? 'navbar-links-open' : ''}`} id="navbar-nav">
-          {navLinks.map((link) => (
-            <NavLink
-              key={link.path}
-              to={link.path}
-              className={({ isActive }) => `navbar-link ${isActive ? 'navbar-link-active' : ''}`}
-              id={`nav-link-${link.label.toLowerCase()}`}
-              end={link.path === '/'}
-            >
-              <link.icon className="navbar-link-icon" />
-              {link.label}
-            </NavLink>
-          ))}
           <NavLink
-            to="/admin"
-            className="navbar-admin-btn"
-            id="nav-admin-btn"
+            to="/"
+            className={({ isActive }) => `navbar-link ${isActive ? 'navbar-link-active' : ''}`}
+            id="nav-link-home"
+            end
           >
-            <HiOutlineCog />
-            Admin Panel
+            <HiOutlineHome className="navbar-link-icon" />
+            Home
           </NavLink>
+
+          <NavLink
+            to="/vehicles"
+            className={({ isActive }) => `navbar-link ${isActive ? 'navbar-link-active' : ''}`}
+            id="nav-link-vehicles"
+          >
+            <HiOutlineTruck className="navbar-link-icon" />
+            Vehicles
+          </NavLink>
+
+          {/* Customer-specific links */}
+          {isAuthenticated && role === 'CUSTOMER' && (
+            <>
+              <NavLink
+                to="/my/bookings"
+                className={({ isActive }) => `navbar-link ${isActive ? 'navbar-link-active' : ''}`}
+                id="nav-link-my-bookings"
+              >
+                <HiOutlineClipboardList className="navbar-link-icon" />
+                My Bookings
+              </NavLink>
+              <NavLink
+                to="/my/nic-upload"
+                className={({ isActive }) => `navbar-link ${isActive ? 'navbar-link-active' : ''}`}
+                id="nav-link-nic-upload"
+              >
+                <HiOutlineIdentification className="navbar-link-icon" />
+                NIC Upload
+              </NavLink>
+            </>
+          )}
+
+          {/* Auth section */}
+          {!isAuthenticated ? (
+            <NavLink
+              to="/signin"
+              className={({ isActive }) => `navbar-link ${isActive ? 'navbar-link-active' : ''}`}
+              id="nav-link-signin"
+            >
+              <HiOutlineUser className="navbar-link-icon" />
+              Sign In
+            </NavLink>
+          ) : (
+            <>
+              {/* Panel link — only for the user's own role */}
+              {panelLink && (
+                <NavLink
+                  to={panelLink.path}
+                  className="navbar-admin-btn"
+                  id="nav-panel-btn"
+                >
+                  {panelLink.label}
+                </NavLink>
+              )}
+
+              <div className="navbar-user-section">
+                <span className="navbar-user-name" id="navbar-user-name">
+                  {user?.firstName || 'User'}
+                </span>
+                <button
+                  className="navbar-logout-btn"
+                  onClick={handleLogout}
+                  id="nav-logout-btn"
+                >
+                  <HiOutlineLogout />
+                  Logout
+                </button>
+              </div>
+            </>
+          )}
         </nav>
 
         <button

@@ -14,7 +14,9 @@ public enum BookingStatus {
     CONFIRMED {
         @Override
         public Set<BookingStatus> nextValidStatuses() {
-            return EnumSet.of(ACTIVE, CANCELLED);
+            // Handover completion confirms a rental; final completion is guarded by
+            // payment, return-inspection, and deposit-settlement checks in the service.
+            return EnumSet.of(ACTIVE, COMPLETED, CANCELLED);
         }
     },
     ACTIVE {

@@ -7,6 +7,8 @@ import {
   HiOutlineCog,
   HiOutlineClock,
   HiOutlineArrowLeft,
+  HiOutlineCalendar,
+  HiX,
 } from 'react-icons/hi';
 import './Sidebar.css';
 
@@ -16,21 +18,26 @@ const navItems = [
   { path: '/admin/pending', label: 'Pending Approvals', icon: HiOutlineClock },
   { path: '/admin/categories', label: 'Categories', icon: HiOutlineCollection },
   { path: '/admin/maintenance', label: 'Maintenance', icon: HiOutlineCog },
+  { path: '/admin/bookings', label: 'Bookings', icon: HiOutlineCalendar },
 ];
 
-export default function Sidebar() {
-  const location = useLocation();
-
+export default function Sidebar({ open, onClose }) {
   return (
-    <aside className="sidebar" id="sidebar-nav">
+    <aside className={`sidebar ${open ? 'sidebar--open' : ''}`} id="sidebar-nav">
+      {/* Close button (mobile) */}
+      <button className="sidebar-close-btn" onClick={onClose} aria-label="Close sidebar">
+        <HiX />
+      </button>
+
       <div className="sidebar-brand">
         <div className="sidebar-logo">
           <span className="logo-icon">🚗</span>
-          <div>
+          <div className="logo-text-wrap">
             <h1 className="logo-text">RentEase</h1>
-            <span className="logo-subtext">Admin Panel</span>
+            <span className="logo-subtext">Lanka</span>
           </div>
         </div>
+        <div className="sidebar-role-badge">Admin</div>
       </div>
 
       {/* Back to Site Link */}

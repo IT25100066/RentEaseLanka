@@ -1,0 +1,310 @@
+/* ============================================================
+   HandoverPage.css  — Vehicle Handover Management Styles
+   Follows the RentEaseLanka design system (index.css tokens)
+   ============================================================ */
+
+/* ─── Page Layout ──────────────────────────────────────────── */
+.handover-page { animation: fadeInUp 0.45s ease both; }
+
+.handover-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.handover-filter-group {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1.5px solid var(--border-light);
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  letter-spacing: 0.03em;
+}
+
+.filter-chip:hover {
+  border-color: var(--primary-300);
+  color: var(--primary-500);
+  background: var(--primary-50);
+}
+
+.filter-chip.active {
+  background: var(--gradient-primary);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: var(--shadow-primary);
+}
+
+/* ─── Stats Bar ─────────────────────────────────────────────── */
+.handover-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+/* ─── Table Enhancements ────────────────────────────────────── */
+.vehicle-cell-info { display: flex; flex-direction: column; gap: 2px; }
+.vehicle-plate {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--primary-500);
+  letter-spacing: 0.05em;
+}
+.vehicle-model-year { font-size: 0.78rem; color: var(--text-secondary); }
+
+.handover-customer { display: flex; flex-direction: column; gap: 1px; }
+.handover-cname { font-weight: 600; font-size: 0.88rem; }
+.handover-cid { font-size: 0.75rem; color: var(--text-tertiary); }
+
+.handover-staff { font-size: 0.82rem; color: var(--text-secondary); font-style: italic; }
+
+.mileage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  background: var(--sky-50);
+  color: var(--sky-600);
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1px solid var(--sky-100);
+}
+
+.damage-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.damage-chip.no-damage { background: var(--emerald-50); color: var(--emerald-700); border: 1px solid var(--emerald-100); }
+.damage-chip.has-damage { background: var(--rose-50); color: var(--rose-600); border: 1px solid var(--rose-100); }
+.damage-chip.not-inspected { background: var(--amber-50); color: var(--amber-600); border: 1px solid var(--amber-100); }
+
+
+
+/* ─── Action Buttons (table) ────────────────────────────────── */
+.ho-action-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.ho-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 11px;
+  border-radius: var(--radius-md);
+  font-size: 0.76rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+.ho-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+
+
+.ho-btn-mile   { background: var(--sky-50);     color: var(--sky-600);     border-color: var(--sky-100); }
+.ho-btn-mile:hover:not(:disabled)   { background: var(--sky-500);    color: #fff; transform: translateY(-1px); }
+
+.ho-btn-dmg    { background: var(--rose-50);    color: var(--rose-600);    border-color: var(--rose-100); }
+.ho-btn-dmg:hover:not(:disabled)    { background: var(--rose-500);   color: #fff; transform: translateY(-1px); }
+
+.ho-btn-done   { background: var(--emerald-50); color: var(--emerald-700); border-color: var(--emerald-100); }
+.ho-btn-done:hover:not(:disabled)   { background: var(--emerald-500); color: #fff; transform: translateY(-1px); }
+
+.ho-btn-pay    { background: var(--primary-50, #eff6ff); color: var(--primary-600, #2563eb); border-color: var(--primary-100, #bfdbfe); }
+.ho-btn-pay:hover:not(:disabled)    { background: var(--primary-600, #2563eb); color: #fff; transform: translateY(-1px); }
+
+.ho-btn-cancel { background: var(--slate-100);  color: var(--text-secondary); border-color: var(--border-light); }
+.ho-btn-cancel:hover:not(:disabled) { background: var(--rose-500); color: #fff; border-color: transparent; transform: translateY(-1px); }
+
+/* ─── Modal Overlay ──────────────────────────────────────────── */
+.ho-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 20, 14, 0.55);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  animation: fadeIn 0.2s ease both;
+}
+
+.ho-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-2xl);
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: scaleIn 0.25s var(--transition-spring) both;
+}
+
+.ho-modal-header {
+  padding: 24px 28px 20px;
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.ho-modal-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+.ho-modal-icon.amber   { background: var(--amber-50);   color: var(--amber-600); }
+.ho-modal-icon.sky     { background: var(--sky-50);     color: var(--sky-600);   }
+.ho-modal-icon.rose    { background: var(--rose-50);    color: var(--rose-600);  }
+.ho-modal-icon.emerald { background: var(--emerald-50); color: var(--emerald-700); }
+.ho-modal-icon.primary { background: var(--primary-50); color: var(--primary-500); }
+
+.ho-modal-title-group { flex: 1; }
+.ho-modal-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+}
+.ho-modal-subtitle { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
+
+.ho-modal-close {
+  background: var(--slate-100);
+  border: none;
+  border-radius: var(--radius-md);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+.ho-modal-close:hover { background: var(--rose-50); color: var(--rose-600); }
+
+.ho-modal-body  { padding: 24px 28px; }
+.ho-modal-footer {
+  padding: 16px 28px 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  border-top: 1px solid var(--border-light);
+}
+
+/* ─── Vehicle Info Panel (inside modal) ──────────────────────── */
+.ho-vehicle-panel {
+  background: var(--primary-50);
+  border: 1px solid var(--primary-100);
+  border-radius: var(--radius-lg);
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 16px;
+}
+.ho-vehicle-panel-item { display: flex; flex-direction: column; gap: 2px; }
+.ho-vehicle-panel-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-secondary); font-weight: 600; }
+.ho-vehicle-panel-value { font-weight: 700; font-size: 0.9rem; color: var(--primary-600); }
+
+/* ─── Radio Toggle (damage) ──────────────────────────────────── */
+.ho-radio-group { display: flex; gap: 10px; margin-bottom: 16px; }
+.ho-radio-option {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 11px;
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 0.87rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  transition: all var(--transition-fast);
+}
+.ho-radio-option input { display: none; }
+.ho-radio-option.selected-no  { border-color: var(--emerald-500); background: var(--emerald-50); color: var(--emerald-700); }
+.ho-radio-option.selected-yes { border-color: var(--rose-500);    background: var(--rose-50);    color: var(--rose-600); }
+
+/* ─── Initiate Handover Form ─────────────────────────────────── */
+.ho-info-text { margin: 0 0 16px; color: var(--text-secondary); font-size: .9rem; line-height: 1.5; }
+.ho-check-row { display: flex; gap: 9px; align-items: center; margin: 8px 0 16px; font-size: .9rem; cursor: pointer; }
+.ho-initiate-form .form-row { margin-bottom: 16px; }
+
+/* ─── Checkbox toggle ────────────────────────────────────────── */
+.ho-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.ho-checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-500);
+  cursor: pointer;
+}
+
+/* ─── Empty State ────────────────────────────────────────────── */
+.ho-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+.ho-empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.4; }
+.ho-empty h3 { font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+.ho-empty p  { font-size: 0.85rem; }
+
+/* ─── Completion checklist inside modal ──────────────────────── */
+.ho-checklist { list-style: none; display: flex; flex-direction: column; gap: 10px; margin: 16px 0; }
+.ho-checklist li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.ho-checklist li.check-pass { background: var(--emerald-50); color: var(--emerald-700); border: 1px solid var(--emerald-100); }
+.ho-checklist li.check-fail { background: var(--rose-50);    color: var(--rose-600);    border: 1px solid var(--rose-100);   }
+.ho-checklist li span.icon  { font-size: 1rem; }
+
+/* ─── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .handover-stats { grid-template-columns: 1fr 1fr; }
+  .ho-vehicle-panel { grid-template-columns: 1fr; }
+  .ho-modal { max-width: 100%; border-radius: var(--radius-xl); }
+}
