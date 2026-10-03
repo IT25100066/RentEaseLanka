@@ -19,8 +19,9 @@ public class VehicleReturnController {
     @PostMapping("/booking/{bookingId}/inspect")
     @PreAuthorize("hasAnyRole('STAFF', 'MANAGER', 'ADMIN')")
     public ResponseEntity<ReturnInspectionResponse> inspect(@PathVariable Long bookingId,
-                                                              @Valid @RequestBody ReturnInspectionRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(returnService.inspectAndCompleteReturn(bookingId, request));
+            @Valid @RequestBody ReturnInspectionRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(returnService.inspectAndCompleteReturn(bookingId, request));
     }
 
     @GetMapping("/booking/{bookingId}")

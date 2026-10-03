@@ -113,21 +113,22 @@ export default function BookingsPage() {
     }
   };
 
+  const handleStartHandover = (booking) => {
+    const handoverPath = role === 'ADMIN' ? '/admin/handovers'
+      : role === 'MANAGER' ? '/manager/handovers' : '/staff/handovers';
+    const bId = getBookingId(booking);
+    const params = new URLSearchParams({ initiate: 'true', bookingId: String(bId) });
+    if (booking.vehicleId != null) params.set('vehicleId', String(booking.vehicleId));
+    if (booking.customerId != null) params.set('customerId', String(booking.customerId));
+    if (booking.customerName) params.set('customerName', booking.customerName);
+    navigate(`${handoverPath}?${params.toString()}`);
+  };
+
   const handleStatusChange = async (id, action, booking = null) => {
     setProcessingId(id);
     try {
       await API.post(`/booking/${id}/${action}`);
       toast.success(`Booking ${action}ed successfully`);
-      if (action === 'confirm' && booking) {
-        const handoverPath = role === 'ADMIN' ? '/admin/handovers'
-          : role === 'MANAGER' ? '/manager/handovers' : '/staff/handovers';
-        const params = new URLSearchParams({ bookingId: String(id) });
-        if (booking.vehicleId != null) params.set('vehicleId', String(booking.vehicleId));
-        if (booking.customerId != null) params.set('customerId', String(booking.customerId));
-        if (booking.customerName) params.set('customerName', booking.customerName);
-        navigate(`${handoverPath}?${params.toString()}`);
-        return;
-      }
       fetchBookings();
     } catch (err) {
       toast.error(err.response?.data || `Failed to ${action} booking`);
@@ -267,11 +268,11 @@ export default function BookingsPage() {
                       <>
                         <button
                           className="btn-icon btn-approve"
-                          title="Confirm Booking (Customer must place deposit hold)"
-                          onClick={() => handleStatusChange(bId, 'confirm', booking)}
+                          title="Initiate Vehicle Handover & Inspection (Rental confirmed after inspection)"
+                          onClick={() => handleStartHandover(booking)}
                           disabled={processingId === bId}
                         >
-                          <HiOutlineCheckCircle />
+                          <HiOutlineClipboardCheck />
                         </button>
                         <button
                           className="btn-icon btn-reject"

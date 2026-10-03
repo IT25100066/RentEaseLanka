@@ -2,11 +2,9 @@ package com.RentEaseLanka.RentEaseLankaTeam.User_Management.Controller;
 
 import com.RentEaseLanka.RentEaseLankaTeam.User_Management.Model.User;
 import com.RentEaseLanka.RentEaseLankaTeam.User_Management.Service.UserService;
-<<<<<<< Updated upstream
 import lombok.RequiredArgsConstructor;
-=======
 import org.springframework.beans.factory.annotation.Autowired;
->>>>>>> Stashed changes
+
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
@@ -22,20 +20,11 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/staff")
-<<<<<<< Updated upstream
-@RequiredArgsConstructor
-=======
->>>>>>> Stashed changes
 public class StaffController {
 
     private final UserService userService;
 
     // ── NIC directory resolved at server root ──────────────────────────────
-<<<<<<< Updated upstream
-    private final Path nicStorageLocation =
-            Paths.get("uploads/nic").toAbsolutePath().normalize();
-
-=======
     private Path nicStorageLocation =
             Paths.get("uploads/nic").toAbsolutePath().normalize();
 
@@ -44,7 +33,6 @@ public class StaffController {
         this.userService = userService;
     }
 
->>>>>>> Stashed changes
     @GetMapping("/pending-customers")
     public ResponseEntity<List<User>> getPendingCustomers() {
         return ResponseEntity.ok(userService.getPendingCustomers());

@@ -17,7 +17,7 @@ public interface VehicleMapper {
     @Mapping(source = "category.id", target = "categoryId")
     @Mapping(source = "category.name", target = "categoryName")
     @Mapping(source = "category.description", target = "categoryDescription")
-    @Mapping(source = "images", target = "imageUrls", qualifiedByName = "mapImagesToUrls")
+    @Mapping(target = "imageUrls", expression = "java(mapImagesToUrls(vehicle.getImages()))")
     VehicleResponseDTO toDto(Vehicle vehicle);
 
     @Named("mapImagesToUrls")

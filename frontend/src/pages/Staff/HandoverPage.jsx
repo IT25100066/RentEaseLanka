@@ -195,7 +195,9 @@ function InitiateModal({ onClose, onSaved, initialValues = {} }) {
    MODAL — Record Mileage
    ════════════════════════════════════════════════════════════ */
 function MileageModal({ handover, onClose, onSaved }) {
-  const [mileage, setMileage] = useState('');
+  const [mileage, setMileage] = useState(
+    handover?.startingMileage != null ? String(handover.startingMileage) : ''
+  );
   const [busy, setBusy]       = useState(false);
 
   const submit = async () => {
@@ -214,12 +216,14 @@ function MileageModal({ handover, onClose, onSaved }) {
   return (
     <div className="ho-modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="ho-modal" id="mileage-modal">
-        <div className="ho-modal-icon sky"><HiOutlineChartBar /></div>
-        <div className="ho-modal-title-group">
-          <p className="ho-modal-title">Record Starting Mileage</p>
-          <p className="ho-modal-subtitle">Handover #{handover.id}</p>
+        <div className="ho-modal-header">
+          <div className="ho-modal-icon sky"><HiOutlineChartBar /></div>
+          <div className="ho-modal-title-group">
+            <p className="ho-modal-title">Record Starting Mileage</p>
+            <p className="ho-modal-subtitle">Handover #{handover.id}</p>
+          </div>
+          <button className="ho-modal-close" onClick={onClose}><HiX /></button>
         </div>
-        <button className="ho-modal-close" onClick={onClose}><HiX /></button>
 
         <div className="ho-modal-body">
           <VehiclePanel h={handover} />
@@ -238,7 +242,7 @@ function MileageModal({ handover, onClose, onSaved }) {
 
         <div className="ho-modal-footer">
           <button className="btn btn-secondary btn-sm" onClick={onClose} disabled={busy}>Cancel</button>
-          <button id="mileage-submit-btn" className="btn btn-sm" style={{ background: 'var(--sky-500)', color: '#fff' }}
+          <button id="mileage-submit-btn" className="btn btn-primary btn-sm" style={{ background: 'var(--sky-500)', color: '#fff', border: 'none' }}
             onClick={submit} disabled={busy}>
             {busy ? 'Saving…' : '📏 Save Mileage'}
           </button>
@@ -252,8 +256,8 @@ function MileageModal({ handover, onClose, onSaved }) {
    MODAL — Record Damage
    ════════════════════════════════════════════════════════════ */
 function DamageModal({ handover, onClose, onSaved }) {
-  const [hasDamage, setHasDamage]         = useState(false);
-  const [description, setDescription]     = useState('');
+  const [hasDamage, setHasDamage]         = useState(Boolean(handover?.hasDamage));
+  const [description, setDescription]     = useState(handover?.damageDescription || '');
   const [busy, setBusy]                   = useState(false);
 
   const submit = async () => {
@@ -265,7 +269,7 @@ function DamageModal({ handover, onClose, onSaved }) {
     try {
       await recordDamage(handover.id, {
         hasDamage,
-        damageDescription: description.trim() || null,
+        damageDescription: description.trim() || 'Confirmed no new damage',
       });
       toast.success('Damage inspection recorded!');
       onSaved();
@@ -329,7 +333,7 @@ function DamageModal({ handover, onClose, onSaved }) {
 /* ════════════════════════════════════════════════════════════
    MODAL — Complete Handover
    ════════════════════════════════════════════════════════════ */
-function CompleteModal({ handover, onClose, onSaved, onOpenPayment }) {
+function CompleteModal({ handover, onClose, onSaved, onOpenPayment, onOpenMileage, onOpenDamage }) {
   const [busy, setBusy] = useState(false);
   const [hasDepositHold, setHasDepositHold] = useState(null);
   const [checkingHold, setCheckingHold] = useState(false);
@@ -353,12 +357,19 @@ function CompleteModal({ handover, onClose, onSaved, onOpenPayment }) {
     checkDeposit();
   }, [handover?.bookingId]);
 
+  const mileagePass = handover.startingMileage != null;
+  const damagePass  = handover.damageDescription != null || handover.hasDamage !== null;
+  const depositPass = handover.bookingId ? hasDepositHold === true : true;
+
   const checks = [
-    { label: 'Starting mileage entered', pass: handover.startingMileage != null },
-    { label: 'Damage inspection done',   pass: handover.damageDescription != null },
+    { key: 'mileage', label: 'Starting mileage entered', pass: mileagePass, action: onOpenMileage, actionLabel: 'Set Mileage' },
+    { key: 'damage',  label: 'Damage inspection done',   pass: damagePass,  action: onOpenDamage,  actionLabel: 'Inspect Damage' },
     {
+      key: 'deposit',
       label: checkingHold ? 'Checking security deposit hold...' : 'Security deposit hold authorized',
-      pass: handover.bookingId ? hasDepositHold === true : true
+      pass: depositPass,
+      action: onOpenPayment,
+      actionLabel: 'Authorize Hold'
     },
   ];
   const allPass = checks.every((c) => c.pass) && !checkingHold;
@@ -394,9 +405,21 @@ function CompleteModal({ handover, onClose, onSaved, onOpenPayment }) {
           </p>
           <ul className="ho-checklist">
             {checks.map((c) => (
-              <li key={c.label} className={c.pass ? 'check-pass' : 'check-fail'}>
-                <span className="icon">{c.pass ? '✅' : '❌'}</span>
-                {c.label}
+              <li key={c.key} className={c.pass ? 'check-pass' : 'check-fail'} style={{ justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <span className="icon">{c.pass ? '✅' : '❌'}</span>
+                  <span>{c.label}</span>
+                </div>
+                {!c.pass && c.action && (
+                  <button
+                    type="button"
+                    className="btn btn-xs btn-secondary"
+                    style={{ padding: '3px 9px', fontSize: '0.75rem', borderRadius: 'var(--radius-sm)' }}
+                    onClick={c.action}
+                  >
+                    {c.actionLabel}
+                  </button>
+                )}
               </li>
             ))}
           </ul>
@@ -422,7 +445,7 @@ function CompleteModal({ handover, onClose, onSaved, onOpenPayment }) {
           {allPass && (
             <p style={{ fontSize: '0.82rem', background: 'var(--emerald-50)', color: 'var(--emerald-700)',
               padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--emerald-100)', marginTop: 12 }}>
-              <strong>Ready to complete.</strong> This will set the vehicle to <strong>RENTED</strong> and the booking to <strong>ACTIVE</strong>.
+              <strong>Inspection Verified:</strong> Completing handover will confirm and activate the booking, transition the vehicle to <strong>RENTED</strong>, and release the keys to the customer.
             </p>
           )}
         </div>
@@ -697,27 +720,31 @@ export default function HandoverPage() {
                           <HiOutlineLockClosed /> Payment & Hold
                         </button>
 
-                        {isActive(h) && h.startingMileage == null && (
+                        {isActive(h) && (
                           <button className="ho-btn ho-btn-mile" id={`btn-mileage-${h.id}`}
-                            onClick={() => open('mileage', h)}>
-                            <HiOutlineChartBar /> Mileage
+                            onClick={() => open('mileage', h)}
+                            title={h.startingMileage != null ? `Starting Mileage: ${h.startingMileage} km` : 'Record starting mileage'}>
+                            <HiOutlineChartBar /> {h.startingMileage != null ? 'Mileage ✓' : 'Mileage'}
                           </button>
                         )}
-                        {isActive(h) && h.damageDescription == null && (
+                        {isActive(h) && (
                           <button className="ho-btn ho-btn-dmg" id={`btn-damage-${h.id}`}
-                            onClick={() => open('damage', h)}>
-                            <HiOutlineShieldCheck /> Damage
+                            onClick={() => open('damage', h)}
+                            title={h.damageDescription ? `Damage: ${h.damageDescription}` : 'Inspect vehicle damage'}>
+                            <HiOutlineShieldCheck /> {h.damageDescription != null ? 'Damage ✓' : 'Damage'}
                           </button>
                         )}
                         {isActive(h) && (
                           <button className="ho-btn ho-btn-done" id={`btn-complete-${h.id}`}
-                            onClick={() => open('complete', h)}>
+                            onClick={() => open('complete', h)}
+                            title="Complete vehicle handover">
                             <HiOutlineCheckCircle /> Complete
                           </button>
                         )}
                         {isActive(h) && (
                           <button className="ho-btn ho-btn-cancel" id={`btn-cancel-${h.id}`}
-                            onClick={() => open('cancel', h)}>
+                            onClick={() => open('cancel', h)}
+                            title="Cancel vehicle handover">
                             <HiOutlineXCircle /> Cancel
                           </button>
                         )}
@@ -745,7 +772,16 @@ export default function HandoverPage() {
       {modal?.type === 'initiate'  && <InitiateModal onClose={close} onSaved={onSaved} initialValues={modal.initialValues ?? { staffId: String(defaultStaffId) }} />}
       {modal?.type === 'mileage'   && <MileageModal  handover={modal.handover} onClose={close} onSaved={onSaved} />}
       {modal?.type === 'damage'    && <DamageModal   handover={modal.handover} onClose={close} onSaved={onSaved} />}
-      {modal?.type === 'complete'  && <CompleteModal handover={modal.handover} onClose={close} onSaved={onSaved} onOpenPayment={() => open('payment', modal.handover)} />}
+      {modal?.type === 'complete'  && (
+        <CompleteModal
+          handover={modal.handover}
+          onClose={close}
+          onSaved={onSaved}
+          onOpenPayment={() => open('payment', modal.handover)}
+          onOpenMileage={() => open('mileage', modal.handover)}
+          onOpenDamage={() => open('damage', modal.handover)}
+        />
+      )}
       {modal?.type === 'cancel'    && <CancelModal   handover={modal.handover} onClose={close} onSaved={onSaved} />}
       {modal?.type === 'payment'   && <HandoverPaymentModal handover={modal.handover} onClose={close} onActionSuccess={onSaved} />}
       {modal?.type === 'returnInspect' && <ReturnInspectionModal handover={modal.handover} staffId={defaultStaffId} onClose={close} onSaved={onSaved} />}

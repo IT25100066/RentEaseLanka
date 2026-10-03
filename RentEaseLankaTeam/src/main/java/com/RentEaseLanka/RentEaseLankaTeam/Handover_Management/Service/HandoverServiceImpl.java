@@ -350,8 +350,9 @@ public class HandoverServiceImpl implements HandoverService {
             throw new IllegalStateException("Cannot complete handover: a successful security deposit hold is required before renting the vehicle.");
         }
 
-        // Update Vehicle: update odometer and change status to RENTED
-        Vehicle vehicle = vehicleRepository.findById(record.getVehicle().getId()).orElse(record.getVehicle());
+        // Update Vehicle: acquire lock, update odometer and change status to RENTED
+        Vehicle vehicle = vehicleRepository.findByIdWithLock(record.getVehicle().getId())
+                .orElse(record.getVehicle());
         vehicle.setCurrentOdometer(record.getStartingMileage());
         try {
             vehicle.rent();
@@ -363,22 +364,33 @@ public class HandoverServiceImpl implements HandoverService {
         log.info("Vehicle {} status set to RENTED, odometer updated to {}",
                 vehicle.getLicensePlate(), record.getStartingMileage());
 
-        // Update associated Booking: transition to ACTIVE
+        // Update associated Booking: validate double-booking and transition from PENDING -> CONFIRMED -> ACTIVE
         if (record.getBookingId() != null) {
-            try {
-                bookingRepository.findById(record.getBookingId()).ifPresent(booking -> {
-                    if (booking.getStatus() == BookingStatus.PENDING) {
-                        booking.makeConfirmed();
-                    }
-                    if (booking.getStatus() == BookingStatus.CONFIRMED) {
-                        booking.makeActive();
-                    }
-                    bookingRepository.save(booking);
-                    log.info("Booking #{} activated upon successful handover completion.", booking.getBookingId());
-                });
-            } catch (Throwable t) {
-                log.error("Failed to sync booking status to ACTIVE for booking #{}: {}", record.getBookingId(), t.getMessage());
+            Booking booking = bookingRepository.findById(record.getBookingId())
+                    .orElseThrow(() -> new IllegalStateException("Associated booking #" + record.getBookingId() + " not found."));
+
+            // Concurrency guard: ensure no other active reservation overlaps with this vehicle and time slot
+            boolean hasOverlap = bookingRepository.hasOverlappingActiveBookings(
+                    vehicle.getId(),
+                    booking.getBookingId(),
+                    booking.getPickupDateTime(),
+                    booking.getReturnDateTime()
+            );
+
+            if (hasOverlap) {
+                log.error("Double booking detected upon handover completion for vehicle {}", vehicle.getLicensePlate());
+                throw new IllegalStateException("Cannot complete handover: Another active or confirmed booking overlaps with this vehicle and time window.");
             }
+
+            // After pre-handover inspection finishes, transition booking: PENDING -> CONFIRMED -> ACTIVE
+            if (booking.getStatus() == BookingStatus.PENDING) {
+                booking.makeConfirmed();
+            }
+            if (booking.getStatus() == BookingStatus.CONFIRMED) {
+                booking.makeActive();
+            }
+            bookingRepository.save(booking);
+            log.info("Booking #{} confirmed and activated upon successful handover inspection completion.", booking.getBookingId());
         }
 
         // Update HandoverRecord: mark COMPLETED

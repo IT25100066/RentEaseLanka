@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-package com.RentEaseLanka.RentEaseLankaTeam.AdminDashboard_Reporting.Service;2
-=======
 package com.RentEaseLanka.RentEaseLankaTeam.AdminDashboard_Reporting.Service;
->>>>>>> Stashed changes
 
 import com.RentEaseLanka.RentEaseLankaTeam.AdminDashboard_Reporting.DTO.DashboardSummaryDTO;
 import com.RentEaseLanka.RentEaseLankaTeam.AdminDashboard_Reporting.DTO.MaintenanceReportDTO;
@@ -81,13 +77,8 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .completedMaintenance(completedMaintenance)
                 .cancelledMaintenance(cancelledMaintenance)
                 .totalMaintenanceCost(totalMaintenanceCost)
-<<<<<<< Updated upstream
-                .bookingIntegrationNotice("Active bookings and reservation metrics are pending integration with the Booking module.")
-                .revenueIntegrationNotice("Revenue and payment calculations are pending integration with the Payment module.")
-=======
                 .bookingIntegrationNotice("Active bookings and reservation metrics are managed via the Booking module.")
                 .revenueIntegrationNotice("Revenue metrics are tracked via the Financial Management module.")
->>>>>>> Stashed changes
                 .build();
     }
 
@@ -225,11 +216,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                 .type("MODULE_INTEGRATION_NOTICE")
                 .severity("INFO")
                 .title("Module Integration Notice")
-<<<<<<< Updated upstream
-                .message("Overdue returns and pending payment alerts will automatically activate once Booking & Payment modules are connected.")
-=======
                 .message("Overdue returns and booking alerts are tracked automatically via the Booking module.")
->>>>>>> Stashed changes
                 .timestamp(LocalDateTime.now())
                 .build());
 

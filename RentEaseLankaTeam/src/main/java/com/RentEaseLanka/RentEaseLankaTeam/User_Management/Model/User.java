@@ -14,11 +14,23 @@ import java.util.List;
 
 @Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
 @Table(name = "_user") // 'user' is often a reserved keyword in SQL
 public class User implements UserDetails {
+
+    public User() {
+    }
+
+    public User(Long id, String firstName, String lastName, String email, String password, Role role, VerificationStatus verificationStatus, String nicImageUrl) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+        this.verificationStatus = verificationStatus;
+        this.nicImageUrl = nicImageUrl;
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

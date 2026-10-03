@@ -8,6 +8,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface VehicleCategoryMapper {
 
+    @Mapping(source = "id", target = "id")
+    @Mapping(source = "name", target = "name")
+    @Mapping(source = "description", target = "description")
     @Mapping(source = "basePrice", target = "price")
     CategoryResponseDTO toDto(VehicleCategory category);
 }

@@ -29,7 +29,4 @@ public class VehiclePerformanceDTO {
     // Notice indicating rental metrics will integrate when Booking module is implemented
     private String bookingIntegrationNote;
 }
-<<<<<<< Updated upstream
-k
-=======
->>>>>>> Stashed changes
+

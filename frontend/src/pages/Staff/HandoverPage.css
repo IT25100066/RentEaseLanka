@@ -98,46 +98,98 @@
 
 
 
+/* ─── Table Layout & Alignments ────────────────────────────────── */
+.handover-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.handover-table th {
+  padding: 14px 16px;
+  vertical-align: middle;
+  font-weight: 700;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border-bottom: 2px solid var(--border-light);
+  background: var(--bg-surface, #f8fafc);
+  white-space: nowrap;
+}
+
+.handover-table td {
+  padding: 12px 16px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.handover-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.handover-table tbody tr:hover {
+  background-color: var(--bg-hover, rgba(241, 245, 249, 0.6));
+}
+
 /* ─── Action Buttons (table) ────────────────────────────────── */
-.ho-action-group { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.ho-action-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 8px;
+}
 
 .ho-btn {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border-radius: var(--radius-md);
-  font-size: 0.76rem;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--radius-md, 8px);
+  font-size: 0.78rem;
   font-weight: 600;
+  line-height: 1.2;
   cursor: pointer;
   border: 1.5px solid transparent;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-fast, 0.2s);
   white-space: nowrap;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
 }
-.ho-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
 
+.ho-btn svg {
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
 
+.ho-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
 
-.ho-btn-mile   { background: var(--sky-50);     color: var(--sky-600);     border-color: var(--sky-100); }
-.ho-btn-mile:hover:not(:disabled)   { background: var(--sky-500);    color: #fff; transform: translateY(-1px); }
+.ho-btn-mile   { background: var(--sky-50);     color: var(--sky-600);     border-color: var(--sky-200, #bae6fd); }
+.ho-btn-mile:hover:not(:disabled)   { background: var(--sky-500);    color: #fff; border-color: var(--sky-500); transform: translateY(-1px); }
 
-.ho-btn-dmg    { background: var(--rose-50);    color: var(--rose-600);    border-color: var(--rose-100); }
-.ho-btn-dmg:hover:not(:disabled)    { background: var(--rose-500);   color: #fff; transform: translateY(-1px); }
+.ho-btn-dmg    { background: var(--rose-50);    color: var(--rose-600);    border-color: var(--rose-200, #fecdd3); }
+.ho-btn-dmg:hover:not(:disabled)    { background: var(--rose-500);   color: #fff; border-color: var(--rose-500); transform: translateY(-1px); }
 
-.ho-btn-done   { background: var(--emerald-50); color: var(--emerald-700); border-color: var(--emerald-100); }
-.ho-btn-done:hover:not(:disabled)   { background: var(--emerald-500); color: #fff; transform: translateY(-1px); }
+.ho-btn-done   { background: var(--emerald-50); color: var(--emerald-700); border-color: var(--emerald-200, #a7f3d0); }
+.ho-btn-done:hover:not(:disabled)   { background: var(--emerald-600); color: #fff; border-color: var(--emerald-600); transform: translateY(-1px); }
 
-.ho-btn-pay    { background: var(--primary-50, #eff6ff); color: var(--primary-600, #2563eb); border-color: var(--primary-100, #bfdbfe); }
-.ho-btn-pay:hover:not(:disabled)    { background: var(--primary-600, #2563eb); color: #fff; transform: translateY(-1px); }
+.ho-btn-pay    { background: var(--primary-50, #eff6ff); color: var(--primary-600, #2563eb); border-color: var(--primary-200, #bfdbfe); }
+.ho-btn-pay:hover:not(:disabled)    { background: var(--primary-600, #2563eb); color: #fff; border-color: var(--primary-600, #2563eb); transform: translateY(-1px); }
 
 .ho-btn-cancel { background: var(--slate-100);  color: var(--text-secondary); border-color: var(--border-light); }
-.ho-btn-cancel:hover:not(:disabled) { background: var(--rose-500); color: #fff; border-color: transparent; transform: translateY(-1px); }
+.ho-btn-cancel:hover:not(:disabled) { background: var(--rose-500); color: #fff; border-color: var(--rose-500); transform: translateY(-1px); }
 
 /* ─── Modal Overlay ──────────────────────────────────────────── */
 .ho-modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(30, 20, 14, 0.55);
+  background: rgba(15, 23, 42, 0.65);
   backdrop-filter: blur(4px);
   z-index: 1000;
   display: flex;
@@ -152,24 +204,27 @@
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-2xl);
   width: 100%;
-  max-width: 560px;
+  max-width: 580px;
   max-height: 90vh;
   overflow-y: auto;
   animation: scaleIn 0.25s var(--transition-spring) both;
 }
 
 .ho-modal-header {
-  padding: 24px 28px 20px;
+  padding: 20px 24px;
   border-bottom: 1px solid var(--border-light);
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
+  background: var(--bg-surface, #f8fafc);
+  border-top-left-radius: var(--radius-2xl);
+  border-top-right-radius: var(--radius-2xl);
 }
 
 .ho-modal-icon {
-  width: 44px;
-  height: 44px;
+  width: 42px;
+  height: 42px;
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -190,15 +245,16 @@
   font-weight: 700;
   color: var(--text-primary);
   letter-spacing: -0.02em;
+  margin: 0;
 }
-.ho-modal-subtitle { font-size: 0.82rem; color: var(--text-secondary); margin-top: 3px; }
+.ho-modal-subtitle { font-size: 0.82rem; color: var(--text-secondary); margin-top: 2px; }
 
 .ho-modal-close {
   background: var(--slate-100);
   border: none;
   border-radius: var(--radius-md);
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -210,13 +266,17 @@
 }
 .ho-modal-close:hover { background: var(--rose-50); color: var(--rose-600); }
 
-.ho-modal-body  { padding: 24px 28px; }
+.ho-modal-body  { padding: 24px; }
 .ho-modal-footer {
-  padding: 16px 28px 24px;
+  padding: 16px 24px;
   display: flex;
+  align-items: center;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 12px;
   border-top: 1px solid var(--border-light);
+  background: var(--bg-surface, #f8fafc);
+  border-bottom-left-radius: var(--radius-2xl);
+  border-bottom-right-radius: var(--radius-2xl);
 }
 
 /* ─── Vehicle Info Panel (inside modal) ──────────────────────── */
