@@ -11,3 +11,10 @@ export const addVehicleImages = (vehicleId, files) => {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 };
+
+/**
+ * Sets a vehicle to "Out of Service" status.
+ * Requires MANAGER or ADMIN role.
+ * @param {number} id - Vehicle ID
+ */
+export const setVehicleToOutOfService = (id) => API.delete(`/vehicle/${id}/remove`);

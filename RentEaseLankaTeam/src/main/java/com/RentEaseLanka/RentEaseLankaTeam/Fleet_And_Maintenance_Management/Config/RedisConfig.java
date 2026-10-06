@@ -27,7 +27,7 @@ public class RedisConfig implements CachingConfigurer {
                 .build();
 
         return RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(10))
+                .entryTtl(Duration.ofMinutes(1))
                 .disableCachingNullValues()
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(
                         (RedisSerializer<Object>) serializer));

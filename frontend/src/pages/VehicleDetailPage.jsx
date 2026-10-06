@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import API, { BASE_URL } from '../api/axiosInstance';
+import { setVehicleToOutOfService } from '../api/fleet';
 import { toast } from 'react-toastify';
 import StatusBadge from '../components/common/StatusBadge';
 import Modal from '../components/common/Modal';
@@ -17,6 +18,7 @@ import {
   HiOutlinePlus,
   HiOutlineArrowLeft,
   HiOutlinePhotograph,
+  HiOutlineBan,
 } from 'react-icons/hi';
 import './VehicleDetailPage.css';
 
@@ -31,10 +33,13 @@ export default function VehicleDetailPage() {
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
   const [showAddImagesModal, setShowAddImagesModal] = useState(false);
+  const [showOutOfServiceModal, setShowOutOfServiceModal] = useState(false);
+  const [outOfServiceLoading, setOutOfServiceLoading] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [activeImage, setActiveImage] = useState(0);
 
   const canManageImages = role === 'MANAGER' || role === 'ADMIN';
+  const canSetOutOfService = role === 'MANAGER' || role === 'ADMIN';
 
   const getFleetPath = () => {
     if (role === 'ADMIN') return '/admin/fleet';
@@ -94,6 +99,20 @@ export default function VehicleDetailPage() {
   const handleCompleteMaintenance = (record) => {
     setSelectedRecord(record);
     setShowCompleteModal(true);
+  };
+
+  const handleSetOutOfService = async () => {
+    setOutOfServiceLoading(true);
+    try {
+      await setVehicleToOutOfService(id);
+      toast.success('Vehicle has been set to Out of Service.');
+      setShowOutOfServiceModal(false);
+      navigate(getFleetPath());
+    } catch (err) {
+      toast.error(err.userMessage || 'Failed to set vehicle out of service.');
+    } finally {
+      setOutOfServiceLoading(false);
+    }
   };
 
   if (loading) return <LoadingSpinner message="Loading vehicle details..." />;
@@ -236,6 +255,17 @@ export default function VehicleDetailPage() {
               <HiOutlinePlus />
               Schedule Maintenance
             </button>
+            {canSetOutOfService && (
+              <button
+                className="btn btn-danger"
+                onClick={() => setShowOutOfServiceModal(true)}
+                id="set-out-of-service-btn"
+                title="Mark this vehicle as Out of Service"
+              >
+                <HiOutlineBan />
+                Out of Service
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -321,6 +351,54 @@ export default function VehicleDetailPage() {
             onClose={() => setShowCompleteModal(false)}
           />
         )}
+      </Modal>
+
+      {/* Out of Service Confirmation Modal */}
+      <Modal
+        isOpen={showOutOfServiceModal}
+        onClose={() => setShowOutOfServiceModal(false)}
+        title="Set Vehicle Out of Service"
+        size="sm"
+      >
+        <div style={{ textAlign: 'center', padding: '8px 0 16px' }}>
+          <div style={{
+            width: '56px',
+            height: '56px',
+            borderRadius: '50%',
+            background: 'rgba(239,68,68,0.12)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+          }}>
+            <HiOutlineBan style={{ fontSize: '1.75rem', color: '#ef4444' }} />
+          </div>
+          <h3 style={{ margin: '0 0 8px', fontSize: '1.05rem', fontWeight: 600 }}>
+            Confirm Out of Service
+          </h3>
+          <p style={{ margin: '0 0 24px', color: 'var(--text-secondary, #6b7280)', fontSize: '0.9rem', lineHeight: 1.5 }}>
+            Are you sure you want to mark <strong>{vehicle?.model}</strong> ({vehicle?.licensePlate}) as{' '}
+            <strong>Out of Service</strong>? This action will make the vehicle unavailable for bookings.
+          </p>
+          <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <button
+              className="btn btn-ghost"
+              onClick={() => setShowOutOfServiceModal(false)}
+              disabled={outOfServiceLoading}
+              id="cancel-out-of-service-btn"
+            >
+              Cancel
+            </button>
+            <button
+              className="btn btn-danger"
+              onClick={handleSetOutOfService}
+              disabled={outOfServiceLoading}
+              id="confirm-out-of-service-btn"
+            >
+              {outOfServiceLoading ? 'Processing…' : 'Yes, Set Out of Service'}
+            </button>
+          </div>
+        </div>
       </Modal>
     </div>
   );

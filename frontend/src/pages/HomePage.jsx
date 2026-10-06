@@ -296,8 +296,8 @@ export default function HomePage() {
           ) : (
             <div className="featured-grid">
               {vehicles.map((v, i) => {
-                const img = v.images?.[0]
-                  ? (v.images[0].startsWith('http') ? v.images[0] : `${BASE_URL}${v.images[0]}`)
+                const img = v.imageUrls?.[0]
+                  ? (v.imageUrls[0].startsWith('http') ? v.imageUrls[0] : `${BASE_URL}${v.imageUrls[0]}`)
                   : null;
                 const price = v.dailyRate
                   ? `LKR ${Number(v.dailyRate).toLocaleString()}`
