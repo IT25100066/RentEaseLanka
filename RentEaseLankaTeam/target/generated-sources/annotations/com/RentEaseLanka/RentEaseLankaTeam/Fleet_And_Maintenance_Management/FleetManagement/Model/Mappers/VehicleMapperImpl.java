@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-11-12T10:52:38+0530",
-    comments = "version: 1.5.5.Final, compiler: javac, environment: Java 26.0.1 (Oracle Corporation)"
+    date = "2026-11-12T12:43:48+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.200.v20261008-1115, environment: Java 25.0.5 (Eclipse Adoptium)"
 )
 @Component
 public class VehicleMapperImpl implements VehicleMapper {
@@ -25,17 +25,17 @@ public class VehicleMapperImpl implements VehicleMapper {
         vehicleResponseDTO.categoryId( vehicleCategoryId( vehicle ) );
         vehicleResponseDTO.categoryName( vehicleCategoryName( vehicle ) );
         vehicleResponseDTO.categoryDescription( vehicleCategoryDescription( vehicle ) );
+        vehicleResponseDTO.createdAt( vehicle.getCreatedAt() );
+        vehicleResponseDTO.currentOdometer( vehicle.getCurrentOdometer() );
+        vehicleResponseDTO.dailyRentalRate( vehicle.getDailyRentalRate() );
         vehicleResponseDTO.id( vehicle.getId() );
         vehicleResponseDTO.licensePlate( vehicle.getLicensePlate() );
         vehicleResponseDTO.model( vehicle.getModel() );
-        vehicleResponseDTO.year( vehicle.getYear() );
-        vehicleResponseDTO.currentOdometer( vehicle.getCurrentOdometer() );
         if ( vehicle.getStatus() != null ) {
             vehicleResponseDTO.status( vehicle.getStatus().name() );
         }
-        vehicleResponseDTO.dailyRentalRate( vehicle.getDailyRentalRate() );
-        vehicleResponseDTO.createdAt( vehicle.getCreatedAt() );
         vehicleResponseDTO.updatedAt( vehicle.getUpdatedAt() );
+        vehicleResponseDTO.year( vehicle.getYear() );
 
         vehicleResponseDTO.imageUrls( mapImagesToUrls(vehicle.getImages()) );
 
