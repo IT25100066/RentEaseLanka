@@ -41,7 +41,7 @@
 ### **Repository & Artifact Links**
 - **GitHub Repository:** [https://github.com/IT25100066/RentEaseLankaDemo](https://github.com/IT25100066/RentEaseLankaDemo)
 - **DockerHub Images:** `it25100066/renteaselanka-backend`, `it25100066/renteaselanka-frontend`
-- **Application Architecture:** Spring Boot 4.1.0 (Java 21/25) • React 18.3 + Vite • MS SQL Server 2022 • Redis Cache • Nginx Reverse Proxy • Docker Compose
+- **Application Architecture:** Spring Boot 4.1.0 (Java 21/25) • React 18.3 + Vite • MS SQL Server 2022 • Nginx Reverse Proxy • Docker Compose
 
 </div>
 
@@ -52,7 +52,7 @@
 ## 2.1 Project Overview
 The automotive rental industry in Sri Lanka has historically operated on fragmented, manual, and paper-based processes. Traditional rental agencies frequently face operational bottlenecks, including unauthorized vehicle dispatching, unverified customer onboarding, inaccurate manual mileage tracking, unrecorded vehicle damages at return, uncollected security deposits, driver scheduling conflicts, and opaque revenue reconciliation.
 
-**RentEaseLanka** is an enterprise-grade, full-stack vehicle rental and fleet lifecycle management platform engineered to automate and govern the end-to-end lifecycle of car rental operations. Built upon modern software engineering principles, the system implements a strict multi-tier architecture powered by **Spring Boot 4.1 (Java 21/25)** on the backend, **React 18 with Vite** on the frontend, **Microsoft SQL Server 2022** as the primary relational database, **Redis** for distributed caching, and **Docker/Nginx** for containerized reverse-proxy orchestration.
+**RentEaseLanka** is an enterprise-grade, full-stack vehicle rental and fleet lifecycle management platform engineered to automate and govern the end-to-end lifecycle of car rental operations. Built upon modern software engineering principles, the system implements a strict multi-tier architecture powered by **Spring Boot 4.1 (Java 21/25)** on the backend, **React 18 with Vite** on the frontend, **Microsoft SQL Server 2022** as the primary relational database, and **Docker/Nginx** for containerized reverse-proxy orchestration.
 
 The platform provides a single source of truth for all business operations: from public fleet exploration, customer National Identity Card (NIC) verification, and collision-free booking reservations to digital 3-step pickup handovers, pre-authorized security deposit holds, post-rental return damage inspections, automated maintenance tracking, and real-time financial income analytics.
 
@@ -154,7 +154,7 @@ The primary objectives of the RentEaseLanka project are:
 | NFR Category | Metric / Specification | Technical Implementation in RentEaseLanka |
 |---|---|---|
 | **Security** | OWASP Top 10 Compliance, Stateless Auth, Strong Hashing | Stateless JWT token authentication (HMAC-SHA256), BCrypt password hashing (10 rounds), method-level `@PreAuthorize` guards, path traversal sanitization on uploaded files. |
-| **Performance** | Sub-200ms API latency, fast read throughput | Redis distributed caching for vehicle catalog and category queries, indexed relational foreign keys in MS SQL Server, MapStruct compile-time DTO mappers. |
+| **Performance** | Fast read throughput | Indexed relational foreign keys in MS SQL Server, MapStruct compile-time DTO mappers. |
 | **Data Integrity** | ACID transactions & strict state transitions | Spring `@Transactional` boundaries on all multi-entity operations (Handover, Return, Payment), database unique constraints on license plates, emails, and transaction references. |
 | **Scalability** | Horizontal containerized scaling | Stateless Spring Boot backend architecture, containerized Docker Compose micro-services, Nginx reverse proxy load balancing capability. |
 | **Usability & UX** | High responsiveness, zero layout shift, accessibility | React 18 SPA with custom Deep Forest Green & Peach design system, glassmorphism cards, responsive viewport grids, real-time React Toastify alerts, and modal wizards. |
@@ -168,7 +168,7 @@ The primary objectives of the RentEaseLanka project are:
 ### Technical Constraints
 - **Runtime Environment:** Backend requires Java 21 or Java 25 JDK; frontend requires Node.js 18+ and modern ECMAScript standards.
 - **Database Engine:** Relational schema relies on Microsoft SQL Server 2022 (T-SQL syntax and `SQLServerDialect`).
-- **Network Ports:** Backend runs on port `8081`, Frontend on port `5173` (dev) / `80` (prod Nginx), SQL Server on port `1433`, and Redis on port `6379`.
+- **Network Ports:** Backend runs on port `8081`, Frontend on port `5173` (dev) / `80` (prod Nginx), and SQL Server on port `1433`.
 
 ### Operational & Domain Assumptions
 - **Currency Standard:** All monetary transactions, rates, driver fees, and damage deductions are denominated in Sri Lankan Rupees (LKR).
@@ -192,7 +192,6 @@ graph TD
     Security["Spring Security & JWT Filter Chain"]
     ServiceLayer["Service Layer (Business Logic & State Machines)"]
     SQLServer[("Microsoft SQL Server 2022<br/>Primary Relational Database")]
-    RedisCache[("Redis Server 7.x<br/>Distributed Cache")]
     FileStore["Local File Storage<br/>(uploads/vehicles & uploads/nic)"]
 
     Client -->|HTTP / HTTPS Requests| Nginx
@@ -202,7 +201,6 @@ graph TD
     Backend --> Security
     Security --> ServiceLayer
     ServiceLayer -->|Spring Data JPA / Hibernate| SQLServer
-    ServiceLayer -->|Lettuce Connection Pool| RedisCache
     ServiceLayer -->|Multipart I/O Stream| FileStore
 ```
 
@@ -630,7 +628,7 @@ The frontend user interface is built on a custom design system with tokens defin
 | **Security & Auth** | Spring Security + JJWT | `0.11.5` | Stateless authentication, BCrypt password hashing, `@PreAuthorize` |
 | **ORM / Persistence** | Spring Data JPA / Hibernate | Latest | Database entity mappings, JPQL queries, transaction management |
 | **Relational Database**| Microsoft SQL Server | `2022` | ACID relational storage, foreign key constraints, table indexing |
-| **Caching Layer** | Redis + Lettuce | `7.x` | Distributed caching of vehicle catalogs and category metadata |
+| **Caching Layer** | Database-backed queries | — | Vehicle catalog and category metadata queries |
 | **Object Mapping** | MapStruct | `1.5.5` | Compile-time entity-to-DTO transformation |
 | **Validation** | Jakarta Bean Validation | Latest | Request payload constraint enforcement (`@NotNull`, `@Valid`) |
 | **Frontend Framework** | React | `18.3.1` | Declarative component UI library, Virtual DOM |
@@ -796,7 +794,7 @@ The RentEaseLanka project was executed following the **Agile Scrum framework** a
 | **Admin_Dashboard** | *[Student Full Name 1 / ID 1]* | Executive summary dashboard, aggregate fleet utilization metrics, vehicle performance tracking DTOs, dynamic notification engine, and date-range maintenance reporting APIs. |
 | **BookingManagement** | *[Student Full Name 2 / ID 2]* | Booking entity state machine, dynamic rental rate calculation engine, JPQL temporal overlap collision detection queries, chauffeur assignment controls, and automated invoice triggers. |
 | **User Management** | *[Student Full Name 3 / ID 3]* | Spring Security stateless JWT filter chain, BCrypt password hashing, method-level `@PreAuthorize` RBAC security, multipart NIC upload service, staff verification queue, and user seeding. |
-| **FleetAndMaintenenceManagement** | *[Student Full Name 4 / ID 4]* | Vehicle multi-image upload handler, GoF State Pattern lifecycle classes (`VehicleState`), category base rate configuration, Redis catalog caching, and fleet maintenance scheduler. |
+| **FleetAndMaintenenceManagement** | *[Student Full Name 4 / ID 4]* | Vehicle multi-image upload handler, GoF State Pattern lifecycle classes (`VehicleState`), category base rate configuration, and fleet maintenance scheduler. |
 | **Handover_adnReturn Management** | *[Student Full Name 5 / ID 5]* | Mandatory 3-step pickup handover workflow (`PENDING` → `IN_PROGRESS` → `COMPLETED`), odometer validation guards, physical body damage inspection, and post-rental return damage reconciliation. |
 | **Payment_management** | *[Student Full Name 6 / ID 6]* | Payment simulation engine, pre-authorized security deposit holds, automated post-rental damage deduction, deposit refund processing, immutable transaction audit logs, and overdue no-show cleaner. |
 
@@ -833,7 +831,7 @@ gantt
 The RentEaseLanka project successfully designed, engineered, and deployed an enterprise-grade vehicle rental management ecosystem that resolves the operational challenges inherent in traditional rental workflows:
 - **Zero-Trust Handover Authority:** Achieved complete fleet state consistency by establishing the Handover and Return Inspection modules as the strict single authorities for vehicle key release and rental closure.
 - **Robust Financial Governance:** Implemented a transparent financial model incorporating automated invoice generation, pre-authorized security deposit holds, damage deduction settlements, and automated deposit refunds.
-- **High-Performance Architecture:** Delivered a responsive, single-page application frontend supported by high-speed Redis caching and Spring Data JPA optimizations on Microsoft SQL Server.
+- **High-Performance Architecture:** Delivered a responsive, single-page application frontend supported by Spring Data JPA optimizations on Microsoft SQL Server.
 - **Production-Ready DevOps Pipeline:** Containerized the entire ecosystem into an orchestrated Docker Compose infrastructure fronted by an Nginx reverse proxy and validated through automated Jenkins CI/CD scripts.
 
 ## 7.2 Engineering Challenges & Mitigations
@@ -878,7 +876,6 @@ The RentEaseLanka project successfully designed, engineered, and deployed an ent
 [5] Spring Projects by VMware, "Spring Boot Reference Documentation," *Spring.io*, 2024. [Online]. Available: https://docs.spring.io/spring-boot/docs/current/reference/html/  
 [6] Meta Open Source, "React Documentation - Getting Started," *React.dev*, 2024. [Online]. Available: https://react.dev/  
 [7] Microsoft Corporation, "SQL Server 2022 Technical Documentation," *Microsoft Learn*, 2023. [Online]. Available: https://learn.microsoft.com/en-us/sql/sql-server/  
-[8] Redis Ltd., "Redis Documentation: Data structures and in-memory caching," *Redis.io*, 2024. [Online]. Available: https://redis.io/docs/  
 [9] Open Web Application Security Project (OWASP), "OWASP Top Ten Web Application Security Risks," *OWASP Foundation*, 2021. [Online]. Available: https://owasp.org/www-project-top-ten/  
 [10] Docker Inc., "Docker Compose File Reference & Best Practices," *Docker Documentation*, 2024. [Online]. Available: https://docs.docker.com/compose/  
 [11] IEEE Computer Society, "IEEE Standard for Software and System Test Documentation," *IEEE Std 829-2008*, pp. 1-132, Jul. 2008.  
@@ -953,7 +950,6 @@ The RentEaseLanka project successfully designed, engineered, and deployed an ent
 - Java JDK 21 or 25
 - Node.js 18+ and npm
 - Microsoft SQL Server 2022 instance (Port `1433`)
-- Redis Server (Port `6379`)
 - Docker & Docker Compose (for containerized deployment)
 
 ### 1. Backend Local Setup
@@ -965,8 +961,6 @@ cd RentEaseLankaTeam
 # DB_URL=jdbc:sqlserver://localhost:1433;encrypt=false;databaseName=RentEaseLanka;trustServerCertificate=true
 # DB_USERNAME=sa
 # DB_PASSWORD=YourStrongPassword!
-# REDIS_SERVER_NAME=localhost
-# REDIS_SERVER_PORT=6379
 # JWT_SECRET_KEY=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
 
 # Compile and run
@@ -997,7 +991,6 @@ docker compose up --build -d
 # • Frontend & Reverse Proxy: http://localhost:80
 # • Backend REST API:        http://localhost:8081
 # • Microsoft SQL Server:    localhost:1433
-# • Redis Cache Server:      localhost:6379
 ```
 
 ---

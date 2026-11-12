@@ -18,7 +18,6 @@ Both sub-modules use the **State Pattern** to enforce valid status transitions.
 | **Spring Boot 4.1** | Application framework |
 | **Spring Data JPA** | ORM / database interaction |
 | **Spring Security** | `@PreAuthorize` role-based endpoint protection |
-| **Redis** | Caching layer for fleet queries (via `RedisConfig`) |
 | **MS SQL Server** | Relational database |
 | **Lombok** | Boilerplate code reduction |
 | **Jakarta Validation** | `@Min`, `@PositiveOrZero`, `@DecimalMin`, `@NotNull` constraints |
@@ -34,7 +33,6 @@ Both sub-modules use the **State Pattern** to enforce valid status transitions.
 | **Layered Architecture** | Controller → Service (Interface + Impl) → Repository |
 | **Service Interface Pattern** | `FleetService`/`MaintenanceService` interfaces with implementations |
 | **DTO Pattern** | `VehicleCreateRequestDTO`, `VehicleResponseDTO`, `MaintenanceRecordDTO` |
-| **Redis Caching** | `RedisConfig` configures caching for vehicle data |
 
 ---
 
@@ -241,7 +239,6 @@ Each implements `VehicleMaintenanceState`:
 ```
 Fleet_And_Maintenance_Management/
 ├── Config/
-│   └── RedisConfig.java                    # Redis cache configuration
 ├── FleetManagement/
 │   ├── Controller/
 │   │   ├── FleetController.java            # Vehicle CRUD & lifecycle endpoints

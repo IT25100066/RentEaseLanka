@@ -16,8 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -45,7 +43,6 @@ public class FleetServiceImpl implements FleetService {
     private final VehicleMapper vehicleMapper;
 
     @Transactional
-    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
     public void createVehicleWithImages(VehicleCreateRequestDTO vehicleCreateRequest) {
 
         String licensePlate = vehicleCreateRequest.getLicensePlate();
@@ -97,7 +94,6 @@ public class FleetServiceImpl implements FleetService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
     public List<String> addVehicleImages(Long vehicleId, List<MultipartFile> images) {
         if (images == null || images.isEmpty()) {
             throw new IllegalArgumentException("No images provided for upload.");
@@ -127,7 +123,6 @@ public class FleetServiceImpl implements FleetService {
     }
 
     @Override
-    @Cacheable(value = "Vehicles", key = "'allVehicles'")
     public List<VehicleResponseDTO> getAllVehicles() {
         List<Vehicle> vehicles = new ArrayList<>();
         for (Vehicle v : vehicleRepository.findAll()) {
@@ -205,7 +200,6 @@ public class FleetServiceImpl implements FleetService {
     }
 
     @Transactional
-    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
     public VehicleRemoveResponseDTO removePendingVehicles(Long id) {
         try {
 
@@ -226,7 +220,6 @@ public class FleetServiceImpl implements FleetService {
 
     // use an array to get all the list of IDs that are required to make available
     @Override
-    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
     public boolean makeAvailable(List<Long> vehicleIdList) {
         List<Vehicle> vehicles = new ArrayList<>();
         for (Long id : vehicleIdList) {
@@ -322,7 +315,6 @@ public class FleetServiceImpl implements FleetService {
 
     @Override
     @Transactional
-    @CacheEvict(value = "Vehicles", key = "'allVehicles'")
     public boolean deleteVehicle(Long id) {
         try {
             Vehicle vehicle = vehicleRepository.findById(id).orElseThrow();

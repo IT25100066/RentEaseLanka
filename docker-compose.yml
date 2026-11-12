@@ -23,19 +23,7 @@ services:
       retries: 12
       start_period: 30s
 
-  # ─── 2. Redis Cache ────────────────────────────────────────────────────────
-  redis-cache:
-    image: redis:alpine
-    container_name: redis-cache
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  # ─── 3. Database Initialiser (one-shot) ───────────────────────────────────
+  # ─── 2. Database Initialiser (one-shot) ───────────────────────────────────
   # Waits for SQL Server to be healthy, then creates the RentEaseLanka
   # database if it does not already exist. Backend only starts after this
   # service exits successfully.
@@ -58,7 +46,7 @@ services:
           -Q "IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'RentEaseLanka') CREATE DATABASE [RentEaseLanka];";
         echo "Done."
 
-  # ─── 4. Spring Boot Backend ───────────────────────────────────────────────
+  # ─── 3. Spring Boot Backend ───────────────────────────────────────────────
   backend:
     build:
       context: ./RentEaseLankaTeam
@@ -73,8 +61,6 @@ services:
         condition: service_healthy
       db-init:
         condition: service_completed_successfully
-      redis-cache:
-        condition: service_healthy
     volumes:
       - ./RentEaseLankaTeam/uploads:/app/uploads
     environment:
@@ -84,10 +70,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
       - SERVER_PORT=${SERVER_PORT:-8081}
-      - REDIS_SERVER_NAME=redis-cache
-      - REDIS_SERVER_PORT=${REDIS_SERVER_PORT:-6379}
 
-  # ─── 5. Vite React Frontend ────────────────────────────────────────────────
+  # ─── 4. Vite React Frontend ────────────────────────────────────────────────
   frontend:
     build:
       context: ./frontend
