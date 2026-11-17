@@ -32,10 +32,10 @@ jobs:
       - name: Build with Maven
         run: mvn -B clean verify --file RentEaseLankaTeam/pom.xml
         env:
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          DB_URL: ${{ vars.DB_URL }}
+          DB_USERNAME: ${{ vars.DB_USERNAME }}
+          DB_PASSWORD: ${{ vars.DB_PASSWORD }}
+          JWT_SECRET: ${{ vars.JWT_SECRET }}
 
       # Publish to GitHub Packages
       - name: Publish to GitHub Packages
