@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-11-12T12:43:48+0530",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.200.v20261008-1115, environment: Java 25.0.5 (Eclipse Adoptium)"
+    date = "2026-11-17T13:20:17+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.200.v20261008-1115, environment: Java 25.0.4.1 (Eclipse Adoptium)"
 )
 @Component
 public class VehicleCategoryMapperImpl implements VehicleCategoryMapper {

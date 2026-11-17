@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 @Generated(
     value = "org.mapstruct.ap.MappingProcessor",
-    date = "2026-11-12T12:43:48+0530",
-    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.200.v20261008-1115, environment: Java 25.0.5 (Eclipse Adoptium)"
+    date = "2026-11-17T13:19:54+0530",
+    comments = "version: 1.5.5.Final, compiler: Eclipse JDT (IDE) 3.46.200.v20261008-1115, environment: Java 25.0.4.1 (Eclipse Adoptium)"
 )
 @Component
 public class BookingDetailsMapperImpl implements BookingDetailsMapper {
@@ -27,14 +27,6 @@ public class BookingDetailsMapperImpl implements BookingDetailsMapper {
         bookingDetailsDTO.setVehicleId( bookingVehicleId( booking ) );
         bookingDetailsDTO.setCustomerId( bookingUserId( booking ) );
         bookingDetailsDTO.setDriverId( bookingDriverId( booking ) );
-        bookingDetailsDTO.setBookingId( booking.getBookingId() );
-        bookingDetailsDTO.setPickupDateTime( booking.getPickupDateTime() );
-        bookingDetailsDTO.setPickupLocation( booking.getPickupLocation() );
-        bookingDetailsDTO.setReturnDateTime( booking.getReturnDateTime() );
-        bookingDetailsDTO.setReturnLocation( booking.getReturnLocation() );
-        bookingDetailsDTO.setStatus( booking.getStatus() );
-        bookingDetailsDTO.setTotalAmount( booking.getTotalAmount() );
-        bookingDetailsDTO.setWithDriver( booking.isWithDriver() );
 
         bookingDetailsDTO.setCustomerName( booking.getUser() != null ? ((booking.getUser().getFirstName() != null ? booking.getUser().getFirstName() : "") + " " + (booking.getUser().getLastName() != null ? booking.getUser().getLastName() : "")).trim() : null );
         bookingDetailsDTO.setDriverName( booking.getDriver() != null ? ((booking.getDriver().getFirstName() != null ? booking.getDriver().getFirstName() : "") + " " + (booking.getDriver().getLastName() != null ? booking.getDriver().getLastName() : "")).trim() : null );
